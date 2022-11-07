@@ -27,7 +27,7 @@ elif unit == "min":
 while timerLength:
     time.sleep(1)
     timerLength -=1
-    timerstats = json.dumps({"seconds" : timerLength, 'running' : 'True'})
+    timerstats = json.dumps({"seconds" : timerLength, "running" : "True"})
     timerLeft = open(timerLeftPath, "w")
     timerLeft.write(str(timerstats))
     if os.path.exists(stopTimerFilePath):
