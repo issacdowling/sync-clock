@@ -8,7 +8,12 @@ app = Flask(__name__)
 def index():         
     test = open('test', 'r')
     return test      
-                     
+                    
+@app.route('/timer')
+def timer():
+    timer_file = open('timer_file.json', 'r')
+    return timer_file
+
 @app.route('/balls') 
 def balls():
     return "balls"
