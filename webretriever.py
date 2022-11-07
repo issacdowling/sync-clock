@@ -5,7 +5,7 @@ timerWanted = False
 
 if input("Do you want to get the timer? [Y/n]") != "n":
     timer = requests.get("http://localhost:5000/timer")
-    if timer.json()["running"] == "True":
+    if timer.json()["running"] == True:
         while True:
             timer = requests.get("http://localhost:5000/timer")
             print(timer.json()["seconds"])

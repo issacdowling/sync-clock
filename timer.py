@@ -24,12 +24,14 @@ if unit == "sec":
     timerLength = number-1
 elif unit == "min":
     timerLength = (number*60)-1
+
+timerstats = {"seconds" : timerLength, "running" : True, "dismissed" : False}
 while timerLength:
     time.sleep(1)
     timerLength -=1
-    timerstats = json.dumps({"seconds" : timerLength, "running" : "True"})
+    timerstats["seconds"] = timerLength
     timerLeft = open(timerLeftPath, "w")
-    timerLeft.write(str(timerstats))
+    timerLeft.write(json.dumps(timerstats))
     if os.path.exists(stopTimerFilePath):
       print("Timer cancelled")
       break
