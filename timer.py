@@ -1,8 +1,10 @@
 import sys
 import os
 import time
+import json
+
 stopTimerFilePath = "stopTimer"
-timerLeftPath = "timer"
+timerLeftPath = "timer_file.json"
 
 if len(sys.argv) != 3:
     if len(sys.argv) !=5:
@@ -25,8 +27,9 @@ elif unit == "min":
 while timerLength:
     time.sleep(1)
     timerLength -=1
+    timerstats = json.dumps({"seconds" : timerLength, 'running' : 'True'})
     timerLeft = open(timerLeftPath, "w")
-    timerLeft.write(str(timerLength))
+    timerLeft.write(str(timerstats))
     if os.path.exists(stopTimerFilePath):
       print("Timer cancelled")
       break
