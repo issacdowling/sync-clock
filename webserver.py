@@ -4,9 +4,11 @@ print("test")
 
 app = Flask(__name__)
 
+test = open('test', 'r')
+
 @app.route('/')
 def index():
-    return "Test"
+    return test
 
 @app.route('/balls')
 def balls():
