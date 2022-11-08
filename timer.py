@@ -13,8 +13,11 @@ if len(sys.argv) != 3:
 if os.path.exists(stopTimerFilePath):
     os.remove(stopTimerFilePath)
 if os.path.exists(timerLeftPath):
-    print("There's already a timer running")
-    exit()
+    with open(timerLeftPath, "r") as timerLeft:
+        if json.load(timerLeft)["running"] == True:
+            print("There's already a timer running")
+
+            exit()
 
 number = int(sys.argv[1])
 unit = str(sys.argv[2])
@@ -30,19 +33,30 @@ while timerLength:
     time.sleep(1)
     timerLength -=1
     timerstats["seconds"] = timerLength
-    timerLeft = open(timerLeftPath, "w")
+    with open(timerLeftPath, "w") as timerLeft:
+        timerLeft.write(json.dumps(timerstats))
+    if os.path.exists(stopTimerFilePath):
+        print("Timer cancelled")
+        timerstats["running"] = False
+        timerstats["dismissed"] = True
+        with open(timerLeftPath, "w") as timerLeft:
+            timerLeft.write(json.dumps(timerstats))
+            break
+
+timerstats["running"] = False
+
+with open(timerLeftPath, "w") as timerLeft:
     timerLeft.write(json.dumps(timerstats))
+
+while timerstats["dismissed"] == False:
     if os.path.exists(stopTimerFilePath):
-      print("Timer cancelled")
-      break
-while not os.path.exists(stopTimerFilePath):
-    if os.path.exists(stopTimerFilePath):
-        print("Timer stopped")
-        break
+        print("Timer dismissed")
+        timerstats["dismissed"] = True
+        with open(timerLeftPath, "w") as timerLeft:
+            timerLeft.write(json.dumps(timerstats))
+        exit()
     else:
         print("Timer done")
         
 if os.path.exists(stopTimerFilePath):
     os.remove(stopTimerFilePath)
-if os.path.exists(timerLeftPath):
-    os.remove(timerLeftPath)
