@@ -41,10 +41,11 @@ class MainWindow(Gtk.ApplicationWindow):
 
         self.set_child(self.box1)
         self.button1 = Gtk.Button(label="Dismiss")
+        self.timer_progress_bar = Gtk.ProgressBar(show_text=True)
 
         self.box1.append(self.box2)
         self.box1.append(self.box3)
-        self.box2.append(self.button1)
+        self.box2.append(self.timer_progress_bar)
 
         self.connect_timer_button.connect('clicked', self.connect_timer)
 
@@ -55,11 +56,14 @@ class MainWindow(Gtk.ApplicationWindow):
             timer = {"running" : False, "dismissed" : True}
         if timer["running"] == False:
             if timer["dismissed"] == False:
-                self.connect_timer_button.set_label("Timer done")
+                self.timer_progress_bar.set_text("Timer done")
+                self.timer_progress_bar.set_fraction(0)
             else:
-                self.connect_timer_button.set_label("No Timer")
+                self.timer_progress_bar.set_text("No Timer")
+                self.timer_progress_bar.set_fraction(0)
         else:
-            self.connect_timer_button.set_label(str(timer["seconds"]))
+            self.timer_progress_bar.set_text(str(timer["seconds"]))
+            self.timer_progress_bar.set_fraction(timer["seconds"]/timer["starting_seconds"])
         return True                
 
     def updatelabels(self):
