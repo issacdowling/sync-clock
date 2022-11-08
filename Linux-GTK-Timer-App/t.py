@@ -2,16 +2,18 @@ import sys
 import gi
 import random
 import time
+import requests
 gi.require_version('Gtk', '4.0')
 gi.require_version('Adw', '1')
 from gi.repository import Gtk, Adw, GLib
+
 
 
 class MainWindow(Gtk.ApplicationWindow):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         
-        GLib.timeout_add_seconds(1, self.updatelabels)
+        GLib.timeout_add_seconds(1, self.connect_timer)
 
         test = random.randint(1,20)
 
@@ -46,13 +48,22 @@ class MainWindow(Gtk.ApplicationWindow):
 
         self.connect_timer_button.connect('clicked', self.connect_timer)
 
-    def connect_timer(self,button):
-        print("test")
+    def connect_timer(self):
+        timer = requests.get("http://localhost:5000/timer").json()
+        if timer["running"] == False:
+            if timer["dismissed"] == False:
+                self.connect_timer_button.set_label("Timer done")
+            else:
+                self.connect_timer_button.set_label("No Timer")
+        else:
+            self.connect_timer_button.set_label(str(timer["seconds"]))
+        return True                
 
     def updatelabels(self):
         self.connect_timer_button.set_label(str(random.randint(1,300)))
         # NEEDED OR WILL NOT BE CALLED MULTIPLE TIMES
         return True
+
 
 class MyApp(Adw.Application):
     def __init__(self, **kwargs):
