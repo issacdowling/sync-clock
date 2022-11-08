@@ -1,5 +1,7 @@
 import requests
 import time
+import asyncio
+import websockets
 
 timerWanted = False
 
@@ -18,3 +20,5 @@ if input("Do you want to get the timer? [Y/n]") != "n":
     else:
         print("Well, there's no timer running.")
         exit()
+else:
+    asyncio.run(listen())

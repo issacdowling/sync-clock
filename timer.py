@@ -16,12 +16,10 @@ if os.path.exists(timerLeftPath):
     with open(timerLeftPath, "r") as timerLeft:
         if json.load(timerLeft)["running"] == True:
             print("There's already a timer running")
-
             exit()
 
 number = int(sys.argv[1])
 unit = str(sys.argv[2])
-
 
 if unit == "sec":
     timerLength = number-1
@@ -41,7 +39,7 @@ while timerLength:
         timerstats["dismissed"] = True
         with open(timerLeftPath, "w") as timerLeft:
             timerLeft.write(json.dumps(timerstats))
-            break
+        break
 
 timerstats["running"] = False
 
