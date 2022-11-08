@@ -47,9 +47,6 @@ class MainWindow(Gtk.ApplicationWindow):
         self.connect_timer_button.connect('clicked', self.connect_timer)
 
     def connect_timer(self,button):
-        for x in range(1,1000):
-            time.sleep(1)
-            self.updatelabels()
         print("test")
 
     def updatelabels(self):
