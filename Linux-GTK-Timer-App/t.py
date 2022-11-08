@@ -49,7 +49,10 @@ class MainWindow(Gtk.ApplicationWindow):
         self.connect_timer_button.connect('clicked', self.connect_timer)
 
     def connect_timer(self):
-        timer = requests.get("http://localhost:5000/timer").json()
+        try:
+            timer = requests.get("http://localhost:5000/timer").json()
+        except:
+            timer = {"running" : False, "dismissed" : True}
         if timer["running"] == False:
             if timer["dismissed"] == False:
                 self.connect_timer_button.set_label("Timer done")

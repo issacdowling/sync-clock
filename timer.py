@@ -26,7 +26,8 @@ if unit == "sec":
 elif unit == "min":
     timerLength = (number*60)-1
 
-timerstats = {"seconds" : timerLength, "running" : True, "dismissed" : False}
+original_timerLength = timerLength
+timerstats = {"seconds" : timerLength, "starting_seconds" : original_timerLength+1, "running" : True, "dismissed" : False}
 while timerLength:
     time.sleep(1)
     timerLength -=1
