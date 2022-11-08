@@ -34,8 +34,8 @@ class MainWindow(Gtk.ApplicationWindow):
         self.box2.set_spacing(10)
         self.box2.set_margin_top(10)
         self.box2.set_margin_bottom(10)
-        self.box2.set_margin_start(10)
-        self.box2.set_margin_end(10)
+        self.box2.set_margin_start(150)
+        self.box2.set_margin_end(150)
 
         self.set_child(self.box1)
         self.button1 = Gtk.Button(label="Dismiss")
