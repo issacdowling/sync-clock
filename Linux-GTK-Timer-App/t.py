@@ -7,12 +7,11 @@ gi.require_version('Gtk', '4.0')
 gi.require_version('Adw', '1')
 from gi.repository import Gtk, Adw, GLib
 
-
-
 class MainWindow(Gtk.ApplicationWindow):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         
+
         GLib.timeout_add_seconds(1, self.connect_timer)
 
         test = random.randint(1,20)
@@ -37,7 +36,6 @@ class MainWindow(Gtk.ApplicationWindow):
         self.box2.set_margin_bottom(10)
         self.box2.set_margin_start(10)
         self.box2.set_margin_end(10)
-
 
         self.set_child(self.box1)
         self.button1 = Gtk.Button(label="Dismiss")
