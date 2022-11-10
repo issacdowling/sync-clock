@@ -27,23 +27,32 @@ class MainWindow(Gtk.ApplicationWindow):
         self.connect_timer_button.connect('clicked', self.connect_timer)
         self.header.pack_start(self.connect_timer_button)
         #Create button for attempting to get timer info
-        self.box1 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
-        self.box2 = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
-        self.box3 = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        self.box1 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, halign=Gtk.Align.CENTER)
+        self.box2 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, halign=Gtk.Align.CENTER)
+        self.box3 = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, halign=Gtk.Align.CENTER, valign=Gtk.Align.CENTER, spacing=20)
+        self.box4 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, halign=Gtk.Align.CENTER, homogeneous=True, spacing=10)
 
-        self.box2.set_spacing(10)
-        self.box2.set_margin_top(10)
-        self.box2.set_margin_bottom(10)
-        self.box2.set_margin_start(150)
-        self.box2.set_margin_end(150)
-
-        self.set_child(self.box1)
         self.button1 = Gtk.Button(label="Dismiss")
+        self.button2 = Gtk.Button(label="test")
+        self.button3 = Gtk.Button(label="t2")
+
         self.timer_progress_bar = Gtk.ProgressBar(show_text=True)
 
+        self.set_child(self.box1) # Window has horizontal box
+        self.box3.append(self.box4)
         self.box1.append(self.box2)
         self.box1.append(self.box3)
-        self.box2.append(self.timer_progress_bar)
+
+#        self.box3.set_spacing(10)
+#       self.box3.set_margin_top(10)
+#       self.box3.set_margin_bottom(10)
+#       self.box3.set_margin_start(10)
+#       self.box3.set_margin_end(10)
+
+        self.box3.append(self.timer_progress_bar)
+        self.box4.append(self.button1)
+        self.box4.append(self.button2)
+        self.box4.append(self.button3)
 
         self.connect_timer_button.connect('clicked', self.connect_timer)
 
