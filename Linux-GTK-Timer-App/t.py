@@ -26,33 +26,30 @@ class MainWindow(Gtk.ApplicationWindow):
         self.connect_timer_button = Gtk.Button(label=test)
         self.connect_timer_button.connect('clicked', self.connect_timer)
         self.header.pack_start(self.connect_timer_button)
-        #Create button for attempting to get timer info
-        self.box1 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, halign=Gtk.Align.CENTER)
-        self.box2 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, halign=Gtk.Align.CENTER)
-        self.box3 = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, halign=Gtk.Align.CENTER, valign=Gtk.Align.CENTER, spacing=20)
-        self.box4 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, halign=Gtk.Align.CENTER, homogeneous=True, spacing=10)
 
-        self.button1 = Gtk.Button(label="Dismiss")
+        #Create boxes
+        self.box_timer_main = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, halign=Gtk.Align.CENTER, valign=Gtk.Align.CENTER, spacing=20)
+        self.box_timer_bar = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, homogeneous=True)
+        self.box_timer_controls = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, homogeneous=True, spacing=10)
+
+        #Create timer progress bar
+        self.timer_progress_bar = Gtk.ProgressBar(show_text=True, halign=Gtk.Align.FILL)
+
+        #Create timer control buttons
+        self.button_stop_timer = Gtk.Button(label="Stop Timer")
         self.button2 = Gtk.Button(label="test")
         self.button3 = Gtk.Button(label="t2")
 
-        self.timer_progress_bar = Gtk.ProgressBar(show_text=True)
+        #Place boxes
+        self.set_child(self.box_timer_main)
+        self.box_timer_main.append(self.box_timer_bar)
+        self.box_timer_main.append(self.box_timer_controls)
 
-        self.set_child(self.box1) # Window has horizontal box
-        self.box3.append(self.box4)
-        self.box1.append(self.box2)
-        self.box1.append(self.box3)
-
-#        self.box3.set_spacing(10)
-#       self.box3.set_margin_top(10)
-#       self.box3.set_margin_bottom(10)
-#       self.box3.set_margin_start(10)
-#       self.box3.set_margin_end(10)
-
-        self.box3.append(self.timer_progress_bar)
-        self.box4.append(self.button1)
-        self.box4.append(self.button2)
-        self.box4.append(self.button3)
+        #Place widgets within boxes
+        self.box_timer_bar.append(self.timer_progress_bar)
+        self.box_timer_controls.append(self.button_stop_timer)
+        self.box_timer_controls.append(self.button2)
+        self.box_timer_controls.append(self.button3)
 
         self.connect_timer_button.connect('clicked', self.connect_timer)
 
