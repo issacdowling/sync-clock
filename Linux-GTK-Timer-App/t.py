@@ -40,7 +40,7 @@ class MainWindow(Gtk.ApplicationWindow):
         self.button_stop_timer = Gtk.Button(label="Stop Timer", sensitive=False)
         self.button_stop_timer.connect('clicked', self.stop_timer)
         self.button_start_timer = Gtk.Button(label="Start Timer", sensitive=False)
-        #self.button_start_timer.connect('clicked', self.start_timer)
+        self.button_start_timer.connect('clicked', self.start_timer)
 
         #Create timer input field
         self.timer_input_field = Gtk.Text(placeholder_text="Input Length")
@@ -78,21 +78,51 @@ class MainWindow(Gtk.ApplicationWindow):
         stop = requests.post(URL + "/timer_stop").text
         print(stop)
 
-    def updatelabels(self):
-        self.connect_timer_button.set_label(str(random.randint(1,300)))
-        # NEEDED OR WILL NOT BE CALLED MULTIPLE TIMES
-        return True
+    def start_timer(self,button):
+        print(self.validate_timer_input())
+
+
+
+    def validate_timer_input(self):
+
+        user_input = self.timer_input_field.get_text().split()
+        length = 0
+
+        #Checks if input in format "2 mins and 1 sec"
+        if len(user_input) == 5 and user_input[2] == "and":
+            length = int(user_input[0]) * 60 + int(user_input[3])
+
+        #Checks if input in format "2 min 1 sec"
+        elif len(user_input) == 4:
+            length = int(user_input[0]) * 60 + int(user_input[2])
+
+        elif len(user_input) == 2 and (user_input[1] == "min" or user_input[1] == "mins" or user_input[1] == "minute" or user_input[1] == "minutes"):
+            length = int(user_input[0]) * 60
+
+        elif len(user_input) == 2 and (user_input[1] == "sec" or user_input[1] == "secs" or user_input[1] == "second" or user_input[1] == "seconds"):
+            length = int(user_input[0])
+
+        elif len(user_input) == 1:
+            length = int(user_input[0])
+
+        return length
+        
+
+
+        
+        #print(len(user_input.split()))
 
     def refresh_stuff(self):
-        #Send web request to check timer
+        #Send web request to check timer server
         self.check_timer()
 
-        #Enable start button if length entered
-        if self.timer_input_field.get_text() != "":
+        #Enable start button only if length entered is valid
+        if self.validate_timer_input() != 0:
             self.button_start_timer.set_sensitive(True)
         else:
             self.button_start_timer.set_sensitive(False)
 
+        #Enable stop button only if length entered
         if timer["running"] == True:
             self.button_stop_timer.set_sensitive(True)
         else:
