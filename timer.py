@@ -17,11 +17,16 @@ while True:
                 print("There's already a timer running")
                 exit()
 
+#Don't continue until timer should be started (start_timer exists)
+while not os.path.exists(start_timer_path):
+    time.sleep(1)
+    pass
+
     #Don't continue until timer should be started (start_timer exists)
     while not os.path.exists(start_timer_path):
         pass
     
-    #Give time for JSON file to be fully created (otherw
+    #Give time for JSON file to be fully created (otherwise read error may happen)
     time.sleep(0.1)
     
     #Read timer info from start file, save as dict
