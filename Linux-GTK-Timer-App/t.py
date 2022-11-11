@@ -66,8 +66,8 @@ class MainWindow(Gtk.ApplicationWindow):
                 self.timer_progress_bar.set_text("No Timer")
                 self.timer_progress_bar.set_fraction(0)
         else:
-            self.timer_progress_bar.set_text(str(timer["seconds"]))
-            self.timer_progress_bar.set_fraction(timer["seconds"]/timer["starting_seconds"])
+            self.timer_progress_bar.set_text(str(timer["length"]))
+            self.timer_progress_bar.set_fraction(timer["length"]/timer["starting_length"])
         return True                
 
     def stop_timer(self, button):

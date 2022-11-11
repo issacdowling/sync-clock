@@ -3,13 +3,10 @@ import os
 import time
 import json
 
-stop_timer_filepath = "stop_timer"
-timerLeftPath = "timer_file.json"
-
-# Will be relevant for when you can request minutes and seconds
-if len(sys.argv) != 3:
-    if len(sys.argv) !=5:
-        print("Invalid # of arguments")
+working_dir = ""
+stop_timer_path = working_dir + "stop_timer"
+start_timer_path = working_dir + "start_timer"
+timerLeftPath = working_dir + "timer_file.json"
 
 #Check if there's already a timer running, and exit if so
 if os.path.exists(timerLeftPath):
@@ -18,34 +15,30 @@ if os.path.exists(timerLeftPath):
             print("There's already a timer running")
             exit()
 
+#Don't continue until timer should be started (start_timer exists)
+while not os.path.exists(start_timer_path):
+    pass
+
+#Read timer info from start file, save as dict
+timer_json = json.load(open(start_timer_path, 'r'))
+timerstats = {"length" : timer_json["length"]-1, "starting_length" : timer_json["length"], "running" : True, "dismissed" : False, "source" : timer_json["source"]}
+
 #Remove latent stop_timer file if relevant
-if os.path.exists(stop_timer_filepath):
-    os.remove(stop_timer_filepath)
-
-number = int(sys.argv[1])
-unit = str(sys.argv[2])
-
-if unit == "sec":
-    timerLength = number-1
-elif unit == "min":
-    timerLength = (number*60)-1
-
-original_timerLength = timerLength
-timerstats = {"seconds" : timerLength, "starting_seconds" : original_timerLength+1, "running" : True, "dismissed" : False}
+if os.path.exists(stop_timer_path):
+    os.remove(stop_timer_path)
 
 #Main loop for timing
-while timerLength:
+while timerstats["length"]:
     #Count the seconds
     time.sleep(1)
-    timerLength -=1
-    timerstats["seconds"] = timerLength
+    timerstats["length"] -= 1
 
     #Write to file with timer stats
     with open(timerLeftPath, "w") as timerLeft:
         timerLeft.write(json.dumps(timerstats))
 
     #Check if timer should be cancelled
-    if os.path.exists(stop_timer_filepath):
+    if os.path.exists(stop_timer_path):
         #Cancel timer
         print("Timer cancelled")
         timerstats["running"] = False
@@ -62,7 +55,7 @@ with open(timerLeftPath, "w") as timerLeft:
 
 #Code to be run while timer finished but user hasn't dismissed it.
 while timerstats["dismissed"] == False:
-    if os.path.exists(stop_timer_filepath):
+    if os.path.exists(stop_timer_path):
         print("Timer dismissed")
         timerstats["dismissed"] = True
         with open(timerLeftPath, "w") as timerLeft:
@@ -71,5 +64,5 @@ while timerstats["dismissed"] == False:
     else:
         print("Timer done")
         
-if os.path.exists(stop_timer_filepath):
-    os.remove(stop_timer_filepath)
+if os.path.exists(stop_timer_path):
+    os.remove(stop_timer_path)
