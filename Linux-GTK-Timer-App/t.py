@@ -7,12 +7,14 @@ gi.require_version('Gtk', '4.0')
 gi.require_version('Adw', '1')
 from gi.repository import Gtk, Adw, GLib
 
+URL = "http://localhost:5000"
+
 class MainWindow(Gtk.ApplicationWindow):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         
 
-        GLib.timeout_add_seconds(1, self.connect_timer)
+        GLib.timeout_add_seconds(1, self.check_timer)
 
         test = random.randint(1,20)
 
@@ -24,7 +26,6 @@ class MainWindow(Gtk.ApplicationWindow):
         self.header = Gtk.HeaderBar()
         self.set_titlebar(self.header)
         self.connect_timer_button = Gtk.Button(label=test)
-        self.connect_timer_button.connect('clicked', self.connect_timer)
         self.header.pack_start(self.connect_timer_button)
 
         #Create boxes
@@ -37,6 +38,7 @@ class MainWindow(Gtk.ApplicationWindow):
 
         #Create timer control buttons
         self.button_stop_timer = Gtk.Button(label="Stop Timer")
+        self.button_stop_timer.connect('clicked', self.stop_timer)
         self.button2 = Gtk.Button(label="test")
         self.button3 = Gtk.Button(label="t2")
 
@@ -51,11 +53,9 @@ class MainWindow(Gtk.ApplicationWindow):
         self.box_timer_controls.append(self.button2)
         self.box_timer_controls.append(self.button3)
 
-        self.connect_timer_button.connect('clicked', self.connect_timer)
-
-    def connect_timer(self):
+    def check_timer(self):
         try:
-            timer = requests.get("http://localhost:5000/timer").json()
+            timer = requests.get(URL + "/timer").json()
         except:
             timer = {"running" : False, "dismissed" : True}
         if timer["running"] == False:
@@ -69,6 +69,10 @@ class MainWindow(Gtk.ApplicationWindow):
             self.timer_progress_bar.set_text(str(timer["seconds"]))
             self.timer_progress_bar.set_fraction(timer["seconds"]/timer["starting_seconds"])
         return True                
+
+    def stop_timer(self, button):
+        stop = requests.post(URL + "/timer_stop").text
+        print(stop)
 
     def updatelabels(self):
         self.connect_timer_button.set_label(str(random.randint(1,300)))
