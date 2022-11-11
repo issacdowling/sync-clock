@@ -14,7 +14,7 @@ class MainWindow(Gtk.ApplicationWindow):
         super().__init__(*args, **kwargs)
         
 
-        GLib.timeout_add_seconds(1, self.check_timer)
+        GLib.timeout_add_seconds(1, self.refresh_stuff)
 
         test = random.randint(1,20)
 
@@ -29,7 +29,7 @@ class MainWindow(Gtk.ApplicationWindow):
         self.header.pack_start(self.connect_timer_button)
 
         #Create boxes
-        self.box_timer_main = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, halign=Gtk.Align.CENTER, valign=Gtk.Align.CENTER, spacing=20)
+        self.box_timer_main = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, halign=Gtk.Align.CENTER, valign=Gtk.Align.CENTER, spacing=20, margin_start=20, margin_end=20, margin_top=20, margin_bottom=20)
         self.box_timer_bar = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, homogeneous=True)
         self.box_timer_controls = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, homogeneous=True, spacing=10)
 
@@ -37,10 +37,13 @@ class MainWindow(Gtk.ApplicationWindow):
         self.timer_progress_bar = Gtk.ProgressBar(show_text=True, halign=Gtk.Align.FILL)
 
         #Create timer control buttons
-        self.button_stop_timer = Gtk.Button(label="Stop Timer")
+        self.button_stop_timer = Gtk.Button(label="Stop Timer", sensitive=False)
         self.button_stop_timer.connect('clicked', self.stop_timer)
-        self.button2 = Gtk.Button(label="test")
-        self.button3 = Gtk.Button(label="t2")
+        self.button_start_timer = Gtk.Button(label="Start Timer", sensitive=False)
+        #self.button_start_timer.connect('clicked', self.start_timer)
+
+        #Create timer input field
+        self.timer_input_field = Gtk.Text(placeholder_text="Input Length")
 
         #Place boxes
         self.set_child(self.box_timer_main)
@@ -50,10 +53,11 @@ class MainWindow(Gtk.ApplicationWindow):
         #Place widgets within boxes
         self.box_timer_bar.append(self.timer_progress_bar)
         self.box_timer_controls.append(self.button_stop_timer)
-        self.box_timer_controls.append(self.button2)
-        self.box_timer_controls.append(self.button3)
+        self.box_timer_controls.append(self.button_start_timer)
+        self.box_timer_controls.append(self.timer_input_field)
 
     def check_timer(self):
+        global timer
         try:
             timer = requests.get(URL + "/timer").json()
         except:
@@ -78,6 +82,24 @@ class MainWindow(Gtk.ApplicationWindow):
         self.connect_timer_button.set_label(str(random.randint(1,300)))
         # NEEDED OR WILL NOT BE CALLED MULTIPLE TIMES
         return True
+
+    def refresh_stuff(self):
+        #Send web request to check timer
+        self.check_timer()
+
+        #Enable start button if length entered
+        if self.timer_input_field.get_text() != "":
+            self.button_start_timer.set_sensitive(True)
+        else:
+            self.button_start_timer.set_sensitive(False)
+
+        if timer["running"] == True:
+            self.button_stop_timer.set_sensitive(True)
+        else:
+            self.button_stop_timer.set_sensitive(False)
+
+        return True
+
 
 
 class MyApp(Adw.Application):
