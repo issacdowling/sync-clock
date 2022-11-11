@@ -12,7 +12,7 @@ while True:
 
     #Check if there's already a timer running, and exit if so
     if os.path.exists(timer_left_path):
-        with open(timerLeftPath, "r") as timer_left:
+        with open(timer_left_path, "r") as timer_left:
             if json.load(timer_left)["running"] == True:
                 print("There's already a timer running")
 

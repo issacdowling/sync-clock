@@ -129,11 +129,12 @@ class MainWindow(Gtk.ApplicationWindow):
         #print(len(user_input.split()))
 
     def refresh_stuff(self):
+        global timer
         #Send web request to check timer server
         self.check_timer()
 
-        #Enable start button only if length entered is valid
-        if self.validate_timer_input() != 0:
+        #Enable start button only if length entered is valid and timer isn't running
+        if self.validate_timer_input() != 0 and timer["dismissed"] == True:
             self.button_start_timer.set_sensitive(True)
         else:
             self.button_start_timer.set_sensitive(False)
