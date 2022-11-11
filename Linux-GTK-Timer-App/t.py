@@ -14,7 +14,7 @@ class MainWindow(Gtk.ApplicationWindow):
         super().__init__(*args, **kwargs)
         
 
-        GLib.timeout_add_seconds(1, self.refresh_stuff)
+        GLib.timeout_add(1000, self.refresh_stuff)
 
         test = random.randint(1,20)
 
@@ -90,20 +90,35 @@ class MainWindow(Gtk.ApplicationWindow):
 
         #Checks if input in format "2 mins and 1 sec"
         if len(user_input) == 5 and user_input[2] == "and":
-            length = int(user_input[0]) * 60 + int(user_input[3])
+            try:
+                length = int(user_input[0]) * 60 + int(user_input[3])
+            except:
+                length = 0
 
         #Checks if input in format "2 min 1 sec"
         elif len(user_input) == 4:
-            length = int(user_input[0]) * 60 + int(user_input[2])
-
+            try:
+                length = int(user_input[0]) * 60 + int(user_input[2])
+            except:
+                length = 0
+                
         elif len(user_input) == 2 and (user_input[1] == "min" or user_input[1] == "mins" or user_input[1] == "minute" or user_input[1] == "minutes"):
-            length = int(user_input[0]) * 60
+            try:
+                length = int(user_input[0]) * 60
+            except:
+                length = 0
 
         elif len(user_input) == 2 and (user_input[1] == "sec" or user_input[1] == "secs" or user_input[1] == "second" or user_input[1] == "seconds"):
-            length = int(user_input[0])
-
+            try:
+                length = int(user_input[0])
+            except:
+                length = 0
+                
         elif len(user_input) == 1:
-            length = int(user_input[0])
+            try:
+                length = int(user_input[0])
+            except:
+                length = 0
 
         return length
         
