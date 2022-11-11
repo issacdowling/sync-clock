@@ -15,15 +15,11 @@ while True:
         with open(timerLeftPath, "r") as timerLeft:
             if json.load(timerLeft)["running"] == True:
                 print("There's already a timer running")
-                exit()
 
-#Don't continue until timer should be started (start_timer exists)
-while not os.path.exists(start_timer_path):
-    time.sleep(1)
-    pass
 
     #Don't continue until timer should be started (start_timer exists)
     while not os.path.exists(start_timer_path):
+        time.sleep(1)
         pass
     
     #Give time for JSON file to be fully created (otherwise read error may happen)
@@ -72,7 +68,8 @@ while not os.path.exists(start_timer_path):
                 timerLeft.write(json.dumps(timerstats))
         else:
             print("Timer done")
-    
+
+    #Allow time before deleting the files
     time.sleep(0.5)
     
     if os.path.exists(stop_timer_path):
