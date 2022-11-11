@@ -6,14 +6,14 @@ import json
 working_dir = ""
 stop_timer_path = working_dir + "stop_timer"
 start_timer_path = working_dir + "start_timer"
-timerLeftPath = working_dir + "timer_file.json"
+timer_left_path = working_dir + "timer_file.json"
 
 while True:
 
     #Check if there's already a timer running, and exit if so
-    if os.path.exists(timerLeftPath):
-        with open(timerLeftPath, "r") as timerLeft:
-            if json.load(timerLeft)["running"] == True:
+    if os.path.exists(timer_left_path):
+        with open(timerLeftPath, "r") as timer_left:
+            if json.load(timer_left)["running"] == True:
                 print("There's already a timer running")
 
 
@@ -40,8 +40,8 @@ while True:
         timerstats["length"] -= 1
     
         #Write to file with timer stats
-        with open(timerLeftPath, "w") as timerLeft:
-            timerLeft.write(json.dumps(timerstats))
+        with open(timer_left_path, "w") as timer_left:
+            timer_left.write(json.dumps(timerstats))
     
         #Check if timer should be cancelled
         if os.path.exists(stop_timer_path):
@@ -49,23 +49,23 @@ while True:
             print("Timer cancelled")
             timerstats["running"] = False
             timerstats["dismissed"] = True
-            with open(timerLeftPath, "w") as timerLeft:
-                timerLeft.write(json.dumps(timerstats))
+            with open(timer_left_path, "w") as timer_left:
+                timer_left.write(json.dumps(timerstats))
             break
     
     timerstats["running"] = False
     
     #Write changes to signify the fact that the timer is done
-    with open(timerLeftPath, "w") as timerLeft:
-        timerLeft.write(json.dumps(timerstats))
+    with open(timer_left_path, "w") as timer_left:
+        timer_left.write(json.dumps(timerstats))
     
     #Code to be run while timer finished but user hasn't dismissed it.
     while timerstats["dismissed"] == False:
         if os.path.exists(stop_timer_path):
             print("Timer dismissed")
             timerstats["dismissed"] = True
-            with open(timerLeftPath, "w") as timerLeft:
-                timerLeft.write(json.dumps(timerstats))
+            with open(timer_left_path, "w") as timer_left:
+                timer_left.write(json.dumps(timerstats))
         else:
             print("Timer done")
 
@@ -76,4 +76,5 @@ while True:
         os.remove(stop_timer_path)
     if os.path.exists(start_timer_path):
         os.remove(start_timer_path)
+
     
