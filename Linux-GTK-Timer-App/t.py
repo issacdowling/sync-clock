@@ -6,6 +6,7 @@ import requests
 gi.require_version('Gtk', '4.0')
 gi.require_version('Adw', '1')
 from gi.repository import Gtk, Adw, GLib
+import json
 
 URL = "http://localhost:5000"
 
@@ -79,9 +80,9 @@ class MainWindow(Gtk.ApplicationWindow):
         print(stop)
 
     def start_timer(self,button):
-        start_timer_json = {"length" : self.validate_timer_input(), "source" : Linux PC}
-
-
+        start_timer_json = {"length" : int(self.validate_timer_input()), "source" : "Linux PC"}
+        send_start_timer_json = requests.post(URL + "/timer_start", json=start_timer_json)
+        print(start_timer_json)
 
     def validate_timer_input(self):
 
@@ -138,7 +139,7 @@ class MainWindow(Gtk.ApplicationWindow):
             self.button_start_timer.set_sensitive(False)
 
         #Enable stop button only if length entered
-        if timer["running"] == True:
+        if timer["dismissed"] == False:
             self.button_stop_timer.set_sensitive(True)
         else:
             self.button_stop_timer.set_sensitive(False)
