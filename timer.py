@@ -17,6 +17,7 @@ if os.path.exists(timerLeftPath):
 
 #Don't continue until timer should be started (start_timer exists)
 while not os.path.exists(start_timer_path):
+    time.sleep(1)
     pass
 
 #Read timer info from start file, save as dict
