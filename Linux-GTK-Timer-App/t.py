@@ -79,7 +79,7 @@ class MainWindow(Gtk.ApplicationWindow):
         print(stop)
 
     def start_timer(self,button):
-        print(self.validate_timer_input())
+        start_timer_json = {"length" : self.validate_timer_input(), "source" : Linux PC}
 
 
 

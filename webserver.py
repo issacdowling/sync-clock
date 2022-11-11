@@ -8,7 +8,9 @@ working_dir = ""
 def index():         
     test = open('test', 'r')
     return test      
-                    
+
+##Timer stuff
+
 @app.route('/timer')
 def timer():
     timer_file = open(working_dir + 'timer_file.json', 'r')
@@ -20,6 +22,7 @@ def timer_stop():
     with open(working_dir + 'stop_timer', 'w') as stop_timer:
         pass
     return "Sent request to stop timer"
+## End of timer stuff
 
 @app.route('/balls') 
 def balls():
@@ -27,5 +30,3 @@ def balls():
 
 if __name__ == "__main__":
     app.run()
-
-#Test commit
