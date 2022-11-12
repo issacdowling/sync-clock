@@ -68,6 +68,7 @@ while True:
                 timer_left.write(json.dumps(timerstats))
         else:
             print("Timer done")
+            time.sleep(1)
 
     #Allow time before deleting the files
     time.sleep(0.5)
