@@ -8,7 +8,7 @@ gi.require_version('Adw', '1')
 from gi.repository import Gtk, Adw, GLib
 import json
 
-URL = "http://localhost:4761"
+URL = "http://10.0.0.3:4761"
 
 class MainWindow(Gtk.ApplicationWindow):
     def __init__(self, *args, **kwargs):
