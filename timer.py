@@ -13,9 +13,13 @@ while True:
     #Check if there's already a timer running, and exit if so
     if os.path.exists(timer_left_path):
         with open(timer_left_path, "r") as timer_left:
-            if json.load(timer_left)["running"] == True:
+            while json.load(timer_left)["running"] == True or json.load(timer_left)["dismissed"] == False:
                 print("There's already a timer running")
 
+    #Make empty timer file
+    blank_timerstats = {"length" : 0, "starting_length" : 0, "running" : False, "dismissed" : True, "source" : "Blank"}
+    with open(timer_left_path, 'w') as timer_left:
+        timer_left.write(json.dumps(blank_timerstats))
 
     #Don't continue until timer should be started (start_timer exists)
     while not os.path.exists(start_timer_path):
@@ -77,5 +81,5 @@ while True:
         os.remove(stop_timer_path)
     if os.path.exists(start_timer_path):
         os.remove(start_timer_path)
-
-    
+    if os.path.exists(timer_left_path):
+        os.remove(timer_left_path)
