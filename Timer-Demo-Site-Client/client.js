@@ -1,5 +1,5 @@
 // Make websocket connection to server
-let socket = new WebSocket("ws://127.0.0.1:3000");
+let socket = new WebSocket("ws://127.0.0.1:3000/timer");
 
 function send_entered_message() {
     let entered_message = document.querySelector("#message_to_send").value
