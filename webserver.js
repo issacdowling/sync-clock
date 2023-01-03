@@ -15,19 +15,19 @@ const serverPort = 3000,
 websocketServer.on('connection', (webSocketClient) => {
 
     function send_random_video() {
-        let videoIDs = ["MYrfLmm_cT4", "i_mLxyIXpSY", "8mrNEVUuZdk", "OCJYDJXDRHw"]
+        let videoIDs = ["Test", "Test2", "Test3", "Test 5"]
         let videoID = videoIDs[Math.floor(Math.random() * videoIDs.length)];
         webSocketClient.send(videoID)
         return videoID
     }
 
     // Send a video every five seconds
-    setInterval(send_random_video, 5000)
+    setInterval(send_random_video, 1000)
     
     //when a message is received, echo it
-    webSocketClient.on('message', (message) => {
+    webSocketClient.on('message', function incoming(message) {
 
-        //console.log(message)
+        console.log(message.toString('utf-8'))
 
         //for each websocket client
         websocketServer
@@ -37,6 +37,7 @@ websocketServer.on('connection', (webSocketClient) => {
             //client.send(`{ "message" : ${message} }`);
         });
     });
+
 });
 
 //start the web server
