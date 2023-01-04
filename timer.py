@@ -3,7 +3,8 @@ import os
 import time
 import json
 
-working_dir = ""
+#When testing, make it somewhere other than the repo, or five server will auto refresh, breaking things
+working_dir = "/home/issacdowling/Downloads/"
 stop_timer_path = working_dir + "stop_timer"
 start_timer_path = working_dir + "start_timer"
 timer_left_path = working_dir + "timer_file.json"
@@ -31,14 +32,14 @@ while True:
     
     #Read timer info from start file, save as dict
     timer_json = json.load(open(start_timer_path, 'r'))
-    timerstats = {"length" : timer_json["length"]-1, "starting_length" : timer_json["length"], "running" : True, "dismissed" : False, "source" : timer_json["source"]}
+    timerstats = {"length" : int(timer_json["length"]), "starting_length" : timer_json["length"], "running" : True, "dismissed" : False, "source" : timer_json["source"]}
     
     #Remove latent stop_timer file if relevant
     if os.path.exists(stop_timer_path):
         os.remove(stop_timer_path)
     
     #Main loop for timing
-    while timerstats["length"]:
+    while timerstats["length"] >= 1:
         #Count the seconds
         time.sleep(1)
         timerstats["length"] -= 1
@@ -58,6 +59,7 @@ while True:
             break
     
     timerstats["running"] = False
+    timerstats["length"] = 0
     
     #Write changes to signify the fact that the timer is done
     with open(timer_left_path, "w") as timer_left:

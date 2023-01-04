@@ -1,17 +1,21 @@
 // Make websocket connection to server
 let socket = new WebSocket("ws://127.0.0.1:3000/timer");
 
-function send_entered_message() {
-    let entered_message = document.querySelector("#message_to_send").value
-    socket.send(entered_message)
+function send_start_timer() {
+    let duration_input = document.querySelector("#duration_input").value
+    let duration_input_json = {"length" : duration_input, "source" : "test"}
+    socket.send(JSON.stringify(duration_input_json))
+}
+
+function send_stop_timer() {
+    let duration_input_json = {"stop" : true}
+    socket.send(JSON.stringify(duration_input_json))
 }
 
 
 // When the connection is opened:
 socket.onopen = function(e) {
     console.log("[open] Connection established");
-    console.log("Sending to server");
-    socket.send("Hello");
 };
 
 // When the connection errors:
