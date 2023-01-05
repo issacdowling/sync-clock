@@ -3,3 +3,10 @@
     color: white;
     text-align: center;}
     
+#debug {
+    font-size: 5px;
+}
+
+button:disabled {
+    background-color: grey;
+}

@@ -12,13 +12,13 @@
     <form >
         <input type="text" id="duration_input">
         <br>
-        <button type="button" onclick="send_start_timer()">Start Timer</button>
-        <br>
-        <button type="button" onclick="send_stop_timer()">Stop Timer</button>
+        <button type="button" onclick="send_toggle_timer()" id="timer_toggle_button">Start Timer</button>
 
     </form>
 
-    <div id="video"></div>
+    <div id="length"></div>
+
+    <div id="debug"></div>
 
     <script src="client.js"></script>
 </body>

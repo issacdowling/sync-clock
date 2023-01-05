@@ -11,11 +11,16 @@ timer_left_path = working_dir + "timer_file.json"
 
 while True:
 
-    #Check if there's already a timer running, and exit if so
+    #Check if there are any residual files from a previous run.
+    #This script should never be run multiple times on the same path.
     if os.path.exists(timer_left_path):
-        with open(timer_left_path, "r") as timer_left:
-            while json.load(timer_left)["running"] == True or json.load(timer_left)["dismissed"] == False:
-                print("There's already a timer running")
+        os.remove(timer_left_path)
+
+    if os.path.exists(start_timer_path):
+        os.remove(start_timer_path)
+
+    if os.path.exists(stop_timer_path):
+        os.remove(stop_timer_path)
 
     #Make empty timer file
     blank_timerstats = {"length" : 0, "starting_length" : 0, "running" : False, "dismissed" : True, "source" : "Blank"}
