@@ -77,7 +77,6 @@ wsTimer.on('connection', function connection(ws) {
           wsTimer.clients.forEach( client => {
             client.send(data);
           });
-          
         });
       });
   })

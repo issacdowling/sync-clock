@@ -6,7 +6,7 @@ let timer_is_running = false;
 function send_toggle_timer() {
     console.log(timer_is_running)
     if (timer_is_running) {
-        let duration_input_json = {"stop" : true}
+        let duration_input_json = {"stop" : "please"}
         socket.send(JSON.stringify(duration_input_json))
     } else if (timer_is_running == false) {
         let duration_input = document.querySelector("#duration_input").value
