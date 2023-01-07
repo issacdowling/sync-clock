@@ -1,5 +1,6 @@
 // Make websocket connection to server
-let socket = new WebSocket("ws://127.0.0.1:3000/timer");
+const ip = "10.0.0.20"
+let socket = new WebSocket("ws://" + ip + ":3000/timer");
 let timer_is_running = false;
 
 function send_toggle_timer() {
