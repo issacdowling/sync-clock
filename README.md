@@ -3,11 +3,31 @@
 ## Description
 This will be used for any little convenience features that I want to sync between devices. Timers are the easiest example: I set a timer on my phone, I want it on my PC.
 
-## Installation
-For now, everything is just a python script. Clone the repo, and run webserver.py . Then, run whatever extra feature you want too. Right now it's just timers implemented, so you'll also run timer.py. You've now got a webserver allowing devices access to the timer, which can be accessed using the companion apps also available on this repo. If you don't see a way to configure the IP that the clients are accessing, it'll be a variable at the top of the client's script, which you should change to the local IP of the device running webserver.py. webserver.py and the individual featues (like timer.py) by default must stay in the same directory as eachother, however there's a working_dir variable that can be changed if you'd rather do it differently.
+# Usage
 
-## Usage
-TBD
+## Timers
+There are two ways to interact with the timers: websockets, and the REST API.
+
+### Websockets
+
+#### If you want to start a timer:
+Send a JSON string to `ws://your-ip:4762/timer` with the following format:
+```
+{"length" : length_in_seconds, "source" : device_name}
+```
+
+#### If you want to get the status of the timer:
+Just stay connected to the websocket at `ws://your-ip:4762/timer`. You'll receive some JSON immediately on connection, and recieve more every time the status updates in any way:
+```
+{"length" : remaining_time_in_seconds, "starting_length" : original_timer_length_in_seconds, "running" : is_running_bool, "dismissed" : user_has_dismissed_timer_bool, "source" : name_of_device_set_from}
+```
+
+#### If you want to stop the timer:
+Send a JSON string to the websocket with the following format:
+```
+{"stop" : "please"}
+```
+If you don't ask nicely ("please"), I will be sorely disappointed (though technically you can put anything there).
 
 ## Roadmap
 TBD
