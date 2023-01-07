@@ -9,7 +9,7 @@ const server = createServer();
 const wsTimer = new WebSocketServer({ noServer: true });
 const wsNotTimer = new WebSocketServer({ noServer: true });
 
-const serverPort = 4761
+const serverPort = 4762
 //When testing, make it somewhere other than the repo, or five server will auto refresh, breaking things
 const working_directory = "/home/issacdowling/Downloads/"
 const timer_file = working_directory + "timer_file.json"
