@@ -36,7 +36,6 @@ wsTimer.on('connection', function connection(ws) {
       if (err) {
         console.error(err);
         return;
-        //Only do this if the file is not currently in use (prevents multiple accesses for the same change because fs.watchFile is buggy)
       }
       console.log(data);
       ws.send(data);
@@ -62,15 +61,8 @@ wsTimer.on('connection', function connection(ws) {
       });
     }
 
+    //Log the recieved message
     console.log(message.toString('utf-8'))
-
-    //Do this for each websocket client when a message is receives
-    wsTimer
-    .clients
-    .forEach( client => {
-
-      //client.send(`{ "message" : ${message} }`);
-    });
 
   // When the timer file changes, do this:
   watch(timer_file, (currentStat, prevStat) => {
@@ -79,10 +71,12 @@ wsTimer.on('connection', function connection(ws) {
           if (err) {
             console.error(err);
             return;
-            //Only do this if the file is not currently in use (prevents multiple accesses for the same change because fs.watchFile is buggy)
           }
           console.log(data);
-          ws.send(data);
+          //Send data to all clients of the websocket
+          wsTimer.clients.forEach( client => {
+            client.send(data);
+          });
           
         });
       });
