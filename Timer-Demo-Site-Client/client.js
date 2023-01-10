@@ -1,5 +1,24 @@
+// Get useragent
+if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+    uaMobile = true;
+  } else {
+    uaMobile = false;
+  }
+
+// Select css style from HTML
+let theme = document.getElementsByTagName('link')[0];
+
+if (uaMobile == true) {
+    theme.setAttribute('href', 'mobile.css');
+} else if (uaMobile == false) {
+    theme.setAttribute('href', 'desktop.css');
+}
+
+
+
+
 // Make websocket connection to server
-const ip = "10.0.0.20"
+const ip = "10.20.11.26"
 let socket = new WebSocket("ws://" + ip + ":4762/timer");
 let timer_is_running = false;
 
@@ -33,8 +52,18 @@ socket.onmessage = function(event) {
 
     //If timer-related
     if ("length" in recieved_json) {
+
+        // Convert seconds into hours:minutes:seconds
+        var date = new Date(null);
+        date.setSeconds(recieved_json["length"]);
+        length = date.toISOString().substr(11, 8);
+        // Checks if hours are empty, shorten if so.
+        if (length.slice(0,3) == "00:") {
+            length = length.slice(3)
+        }
+
         //Set the div to the time remaining
-        document.getElementById("length").innerHTML = recieved_json["length"]
+        document.getElementById("length").innerHTML = length
 
         if (recieved_json["dismissed"] == false) {
             timer_is_running = true;
