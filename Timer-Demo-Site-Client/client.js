@@ -14,9 +14,6 @@ if (uaMobile == true) {
     theme.setAttribute('href', 'desktop.css');
 }
 
-
-
-
 // Make websocket connection to server
 const ip = "10.20.11.26"
 let socket = new WebSocket("ws://" + ip + ":4762/timer");
