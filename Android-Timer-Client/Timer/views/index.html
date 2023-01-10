@@ -8,49 +8,24 @@
 
 	<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
 	<script type="text/javascript" src="../node_modules/androidjs/lib/androidjs.js"></script>
+  <link rel="stylesheet" type="text/css" href="../views/index.css" /> 
 </head>
-
-<style>
-	.app{
-		font-size:30px;
-	}
-</style>
 
 <body>
 
-<div class="container h-100 d-flex justify-content-center">
-    <div class="jumbotron my-auto">
-      <h3 class="display-3" id='msg'>Hello, world!</h3>
-    </div>
- </div>
+<form >
+  <input type="text" inputmode="numeric" id="duration_input">
+  <br>
+  <button type="button" onclick="send_toggle_timer()" id="timer_toggle_button">Start Timer</button>
 
-<script type="text/javascript" src = "../assets/script.js"></script>
-<script src="../assets/jquery-3.3.1.slim.min.js"></script>
-<script src="../assets/popper.min.js"></script>
-<script src="../assets/bootstrap.min.js"></script>
-<style type="text/css">
-  html, body {
-    height: 100%;
-  }
+</form>
 
-  .container {
-    padding: 0px;
-  }
+  <div id="length"></div>
 
-  .display-3 {
-    font-size: 2.0rem;
-  }
+  <div id="debug"></div>
 
-  .jumbotron {
-    background: #fff;
-  }
-
-</style>
-<script type="text/javascript">
-	function toggle_popover() {
-		$('#popover').popover('toggle')
-	}
-</script>
 </body>
+
+<script type="text/javascript" src="../main.js"></script>
 
 </html>
