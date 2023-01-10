@@ -15,10 +15,8 @@ while True:
     #This script should never be run multiple times on the same path.
     if os.path.exists(timer_left_path):
         os.remove(timer_left_path)
-
     if os.path.exists(start_timer_path):
         os.remove(start_timer_path)
-
     if os.path.exists(stop_timer_path):
         os.remove(stop_timer_path)
 
@@ -38,10 +36,6 @@ while True:
     #Read timer info from start file, save as dict
     timer_json = json.load(open(start_timer_path, 'r'))
     timerstats = {"length" : int(timer_json["length"]), "starting_length" : timer_json["length"], "running" : True, "dismissed" : False, "source" : timer_json["source"]}
-    
-    #Remove latent stop_timer file if relevant
-    if os.path.exists(stop_timer_path):
-        os.remove(stop_timer_path)
     
     #Main loop for timing
     while timerstats["length"] >= 1:
