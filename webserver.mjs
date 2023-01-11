@@ -23,23 +23,13 @@ wsTimer.on('connection', function connection(ws) {
     if (err) {
       console.error(err);
       return;
-      //Only do this if the file is not currently in use (prevents multiple accesses for the same change because fs.watchFile is buggy)
     }
     console.log(data);
     ws.send(data);
   })
-  //when a message is received, log it
+  
+  //when a message is received:
   ws.on('message', function incoming(message) {
-
-    //Immediately let the client know what's going on.
-    readFile(timer_file, 'utf8', (err, data) => {
-      if (err) {
-        console.error(err);
-        return;
-      }
-      console.log(data);
-      ws.send(data);
-    })
 
     let rec_msg_json = JSON.parse(message)
 
@@ -61,24 +51,34 @@ wsTimer.on('connection', function connection(ws) {
       });
     }
 
+    //Let the client know what's going on if they send a message
+    readFile(timer_file, 'utf8', (err, data) => {
+      if (err) {
+        console.error(err);
+        return;
+      }
+      console.log(data);
+      ws.send(data);
+    })
+
     //Log the recieved message
     console.log(message.toString('utf-8'))
 
-  // When the timer file changes, do this:
-  watch(timer_file, (currentStat, prevStat) => {
-      //Read the contents of the file and pass it on
-      readFile(timer_file, 'utf8', (err, data) => {
-          if (err) {
-            console.error(err);
-            return;
-          }
-          console.log(data);
-          //Send data to all clients of the websocket
-          wsTimer.clients.forEach( client => {
-            client.send(data);
+    // When the timer file changes, do this:
+    watch(timer_file, (currentStat, prevStat) => {
+        //Read the contents of the file and pass it on
+        readFile(timer_file, 'utf8', (err, data) => {
+            if (err) {
+              console.error(err);
+              return;
+            }
+            console.log(data);
+            //Send data to all clients of the websocket
+            wsTimer.clients.forEach( client => {
+              client.send(data);
+            });
           });
         });
-      });
   })
 });
 

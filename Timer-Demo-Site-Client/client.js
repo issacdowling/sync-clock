@@ -15,7 +15,7 @@ if (uaMobile == true) {
 }
 
 // Make websocket connection to server
-const ip = "10.20.11.26"
+const ip = "10.0.0.200"
 let socket = new WebSocket("ws://" + ip + ":4762/timer");
 let timer_is_running = false;
 
@@ -32,27 +32,17 @@ function send_toggle_timer() {
 
 }
 
-// When the connection is opened:
-socket.onopen = function(e) {
-    console.log("[open] Connection established");
-};
-
-// When the connection errors:
-socket.onerror = function(error) {
-    console.log(`[error]`);
-    };
-
 // When the connection recieves a message:
 socket.onmessage = function(event) {
     console.log(`[message] Data received from server: ${event.data}`);
     recieved_json = JSON.parse(event.data)
 
     //If timer-related
-    if ("length" in recieved_json) {
+    if ("remaining_length" in recieved_json) {
 
         // Convert seconds into hours:minutes:seconds
         var date = new Date(null);
-        date.setSeconds(recieved_json["length"]);
+        date.setSeconds(recieved_json["remaining_length"]);
         length = date.toISOString().substr(11, 8);
         // Checks if hours are empty, shorten if so.
         if (length.slice(0,3) == "00:") {
@@ -73,4 +63,14 @@ socket.onmessage = function(event) {
     }
     
     document.querySelector("#debug").innerHTML = event.data
+    };
+
+// When the connection is opened:
+socket.onopen = function(e) {
+    console.log("[open] Connection established");
+};
+
+// When the connection errors:
+socket.onerror = function(error) {
+    console.log(`[error]`);
     };

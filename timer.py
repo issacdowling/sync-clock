@@ -21,7 +21,7 @@ while True:
         os.remove(stop_timer_path)
 
     #Make empty timer file
-    blank_timerstats = {"length" : 0, "starting_length" : 0, "running" : False, "dismissed" : True, "source" : "Blank"}
+    blank_timerstats = {"remaining_length" : 0, "starting_length" : 0, "dismissed" : True, "source" : "Blank"}
     with open(timer_left_path, 'w') as timer_left:
         timer_left.write(json.dumps(blank_timerstats))
 
@@ -35,13 +35,13 @@ while True:
     
     #Read timer info from start file, save as dict
     timer_json = json.load(open(start_timer_path, 'r'))
-    timerstats = {"length" : int(timer_json["length"]), "starting_length" : timer_json["length"], "running" : True, "dismissed" : False, "source" : timer_json["source"]}
+    timerstats = {"remaining_length" : int(timer_json["length"]), "starting_length" : timer_json["length"], "dismissed" : False, "source" : timer_json["source"]}
     
     #Main loop for timing
-    while timerstats["length"] >= 1:
+    while timerstats["remaining_length"] >= 1:
         #Count the seconds
         time.sleep(1)
-        timerstats["length"] -= 1
+        timerstats["remaining_length"] -= 1
     
         #Write to file with timer stats
         with open(timer_left_path, "w") as timer_left:
@@ -51,14 +51,13 @@ while True:
         if os.path.exists(stop_timer_path):
             #Cancel timer
             print("Timer cancelled")
-            timerstats["running"] = False
+            timerstats["remaining_length"] = 0
             timerstats["dismissed"] = True
             with open(timer_left_path, "w") as timer_left:
                 timer_left.write(json.dumps(timerstats))
             break
     
-    timerstats["running"] = False
-    timerstats["length"] = 0
+    timerstats["remaining_length"] = 0
     
     #Write changes to signify the fact that the timer is done
     with open(timer_left_path, "w") as timer_left:
