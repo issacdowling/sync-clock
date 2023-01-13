@@ -15,9 +15,10 @@ if (uaMobile == true) {
 }
 
 // Make websocket connection to server
-const ip = "10.0.0.200"
+const ip = "localhost"
 let socket = new WebSocket("ws://" + ip + ":4762/timer");
 let timer_is_running = false;
+const source = "Web Client"
 
 function send_toggle_timer() {
     console.log(timer_is_running)
@@ -26,7 +27,7 @@ function send_toggle_timer() {
         socket.send(JSON.stringify(duration_input_json))
     } else if (timer_is_running == false) {
         let duration_input = document.querySelector("#duration_input").value
-        let duration_input_json = {"length" : duration_input, "source" : "test"}
+        let duration_input_json = {"length" : duration_input, "source" : source}
         socket.send(JSON.stringify(duration_input_json))
     }
 
