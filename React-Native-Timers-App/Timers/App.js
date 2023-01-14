@@ -2,11 +2,10 @@ import { useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, Button, TextInput } from 'react-native';
 
-
 export default function App() {
 
   // Establish websocket connection
-  const ip = "10.0.0.20"
+  const ip = "192.168.0.139"
   let socket = new WebSocket("ws://" + ip + ":4762/timer");
   let timer_is_running = false;
   const source = "Phone";
@@ -70,8 +69,8 @@ socket.onmessage = function(event) {
     <View style={styles.container}>
       <TextInput style={styles.inputText} placeholder='Time in seconds' placeholderTextColor={'white'} onChangeText={getInputLength}/>
       <View>
-        <Button title="START TIMER" onPress={sendStartTimer} style={styles.button}/>
-        <Button title="STOP TIMER" onPress={sendStopTimer} style={styles.button}/>
+        <Button title="START TIMER" onPress={sendStartTimer} color='#c6bffa' />
+        <Button title="STOP TIMER" onPress={sendStopTimer} color='#464457'/>
       </View>
         <View>
           <Text style={styles.timeLeftText}>{timerDisplayString}</Text>
@@ -90,7 +89,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 60,
-    backgroundColor: '#1e1e1e',
+    backgroundColor: "#1c1b1f",
     alignContent: 'center'
   },
   titleText: {
@@ -98,7 +97,7 @@ const styles = StyleSheet.create({
     padding: 16
   },
   timeLeftText: {
-    color: 'white',
+    color: '#c6bffa',
     padding: 16,
     fontSize: 100,
     textAlign: 'center'
@@ -108,6 +107,7 @@ const styles = StyleSheet.create({
     padding: 16
   },
   button: {
-    color: 'white'
+    color: 'white',
+    backgroundColor: 'black'
   }
 });
