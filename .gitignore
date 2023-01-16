@@ -1,1 +1,4 @@
 node_modules
+timer_file.json
+start_timer
+stop_timer

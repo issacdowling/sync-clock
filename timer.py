@@ -4,7 +4,7 @@ import time
 import json
 
 #When testing, make it somewhere other than the repo, or five server will auto refresh, breaking things
-working_dir = "/home/issacdowling/Downloads/"
+working_dir = ""
 stop_timer_path = working_dir + "stop_timer"
 start_timer_path = working_dir + "start_timer"
 timer_left_path = working_dir + "timer_file.json"

@@ -2,7 +2,8 @@
 import { createServer } from 'http';
 import { WebSocketServer } from 'ws';
 import { parse } from 'url';
-import {watch, readFile, writeFile} from 'fs';
+import {watch, watchFile, readFile, writeFile} from 'fs';
+
 
 //Create server to listen for connections, and the "sub-servers" (?) to handle requests based on path.
 const server = createServer();
@@ -11,7 +12,7 @@ const wsNotTimer = new WebSocketServer({ noServer: true });
 
 const serverPort = 4762
 //When testing, make it somewhere other than the repo, or five server will auto refresh, breaking things
-const working_directory = "/home/issacdowling/Downloads/"
+const working_directory = ""
 const timer_file = working_directory + "timer_file.json"
 const start_timer_file = working_directory + "start_timer"
 const stop_timer_file = working_directory + "stop_timer"
