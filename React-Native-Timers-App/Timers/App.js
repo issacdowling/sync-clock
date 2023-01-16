@@ -1,14 +1,18 @@
 import { useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, Button, TextInput } from 'react-native';
+import { StyleSheet, Text, View, Button, TextInput, TouchableOpacity } from 'react-native';
+
+
+
 
 export default function App() {
 
   // Establish websocket connection
-  const ip = "192.168.0.139"
+  const ip = "10.0.0.20"
   let socket = new WebSocket("ws://" + ip + ":4762/timer");
   let timer_is_running = false;
   const source = "Phone";
+
 
   // Set state for the text input field
   const [inputtedTimerLength, setInputtedTimerLength] = useState('');
@@ -20,7 +24,6 @@ export default function App() {
   socket.onopen = function(e) {
     console.log("[open] Connection established");
   };
-
 
   //Takes the text from the input field and turns it into a number of seconds, outputs to 'inputtedTimerLength'
   function getInputLength(inputText) {
@@ -67,14 +70,25 @@ socket.onmessage = function(event) {
 
   return (
     <View style={styles.container}>
-      <TextInput style={styles.inputText} placeholder='Time in seconds' placeholderTextColor={'white'} onChangeText={getInputLength}/>
-      <View>
-        <Button title="START TIMER" onPress={sendStartTimer} color='#c6bffa' />
-        <Button title="STOP TIMER" onPress={sendStopTimer} color='#464457'/>
+
+      <View style={{alignSelf: 'center'}}>
+      <TextInput style={styles.inputText} placeholderTextColor={'grey'} onChangeText={getInputLength} keyboardType='numeric'/>
       </View>
-        <View>
-          <Text style={styles.timeLeftText}>{timerDisplayString}</Text>
-        </View>
+      
+      <View>
+        <Text style={styles.timeLeftText}>{timerDisplayString}</Text>
+      </View>
+
+      <TouchableOpacity onPress={sendStartTimer}>
+        <View style={styles.startButton}>
+          <Text style={{ color: '#2e295c', fontSize:100 }}>START</Text>
+         </View>
+      </TouchableOpacity>
+      <TouchableOpacity onPress={sendStopTimer}>
+        <View style={styles.stopButton}>
+          <Text style={{ color: '#cecae1', fontSize:100 }}>STOP</Text>
+         </View>
+      </TouchableOpacity>
 
       <StatusBar style="auto" />
     </View>
@@ -104,10 +118,28 @@ const styles = StyleSheet.create({
   },
   inputText: {
     color: 'white',
-    padding: 16
+    paddingLeft:20,
+    borderColor: 'white',
+    borderWidth: 10,
+    borderRadius: 20,
+    fontSize: 40,
+    minWidth: 20,
+    alignItems: 'center'
   },
-  button: {
-    color: 'white',
-    backgroundColor: 'black'
+  startButton: {
+    backgroundColor: '#c6bffa',
+    alignItems: 'center', 
+    justifyContent: 'center',
+    borderRadius: 100,
+    margin: 15,
+    height: 300,
+  },
+  stopButton: {
+    backgroundColor: '#464457',
+    alignItems: 'center', 
+    justifyContent: 'center',
+    borderRadius: 100,
+    margin: 15,
+    height: 300,
   }
 });
