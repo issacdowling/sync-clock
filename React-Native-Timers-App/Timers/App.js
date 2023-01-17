@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, Button, TextInput, TouchableOpacity } from 'react-native';
+import * as Progress from 'react-native-progress';
 
 // Establish websocket connection
 const ip = "10.20.11.26"
@@ -90,6 +91,8 @@ export default function App() {
           <Text style={{ color: '#2e295c', fontSize:100 }}>{mainButtonProperties["text"]}</Text>
          </View>
       </TouchableOpacity>
+
+      <Progress.Bar progress={0.3} size={100} />
 
       <StatusBar style="auto" />
 
