@@ -64,7 +64,6 @@ wsTimer.on('connection', function connection(ws) {
     //GET THE TIME OF THE LAST SUCCESSFUL READ
     //DON'T DO ANYTHING IF JUST A SUPER QUICK REPEAT
     attemptedTime = Math.floor(new Date().getTime())
-    console.log(attemptedTime)
     if (attemptedTime - lastSuccessTime > 100) {
       lastSuccessTime = attemptedTime
 

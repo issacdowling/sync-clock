@@ -37,7 +37,7 @@ while True:
     timer_json = json.load(open(start_timer_path, 'r'))
     timerstats = {"remaining_length" : int(timer_json["length"]), "starting_length" : timer_json["length"], "dismissed" : False, "source" : timer_json["source"]}
     
-    #Main loop for timing
+    #Main loop for timing (final run when seconds at 1, since it'll then take 1 away to get 0)
     while timerstats["remaining_length"] >= 1:
         #Count the seconds
         time.sleep(1)
@@ -49,7 +49,7 @@ while True:
     
         #Check if timer should be cancelled
         if os.path.exists(stop_timer_path):
-            #Cancel timer
+            #Cancel timer by setting the remaining length to 0 and dismissing it
             print("Timer cancelled")
             timerstats["remaining_length"] = 0
             timerstats["dismissed"] = True
@@ -57,16 +57,11 @@ while True:
                 timer_left.write(json.dumps(timerstats))
             break
     
-    timerstats["remaining_length"] = 0
-    
-    #Write changes to signify the fact that the timer is done
-    with open(timer_left_path, "w") as timer_left:
-        timer_left.write(json.dumps(timerstats))
-    
     #Code to be run while timer finished but user hasn't dismissed it.
     while timerstats["dismissed"] == False:
         if os.path.exists(stop_timer_path):
             print("Timer dismissed")
+            timerstats["remaining_length"] = 0
             timerstats["dismissed"] = True
             with open(timer_left_path, "w") as timer_left:
                 timer_left.write(json.dumps(timerstats))
