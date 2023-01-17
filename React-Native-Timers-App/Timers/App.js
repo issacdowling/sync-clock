@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, Button, TextInput, TouchableOpacity } from 'react-native';
-import * as Progress from 'react-native-progress';
+import { StyleSheet, Text, View, Button, TextInput, TouchableOpacity, Vibration } from 'react-native';
+import ProgressBar from 'react-native-progress/Bar';
 
 // Establish websocket connection
 const ip = "10.20.11.26"
 let socket = new WebSocket("ws://" + ip + ":4762/timer");
 const source = "Phone";
+let recieved_json;
+let progress = 0;
 
 //This would always be one input behind if it were a react state, so it's a variable.
 let timerInputString;
@@ -36,6 +38,7 @@ export default function App() {
   //Sends the JSON for stopping the timer
   function sendStopTimer() {
     socket.send(JSON.stringify({"stop" : "please"}));
+    console.log(recieved_json)
   }
 
   function sendStartTimer() {
@@ -45,9 +48,15 @@ export default function App() {
     // When the connection recieves a message:
   socket.onmessage = function(event) {
     let length;
-    let recieved_json;
     console.log(`[message] Data received from server: ${event.data}`);
     recieved_json = JSON.parse(event.data)
+    //The percentage of the timer remaining. If NaN, make sure it's 0, or things will break.
+    //Also, things break if it goes over 1.
+    progress = (recieved_json["remaining_length"] / recieved_json["starting_length"]);
+    if (Number.isNaN(progress)) {
+      progress = 0;
+    }
+
 
     //If timer-related
     if ("remaining_length" in recieved_json) {
@@ -72,9 +81,18 @@ export default function App() {
         setTimerDisplayString(length);
 
         }
+
+        //If timer done but not dismissed, start vibrating
+        if (recieved_json["remaining_length"] == 0 && recieved_json["dismissed"] == false) {
+          Vibration.vibrate([80,300], true)
+          console.log("s")
+        } else {
+          console.log("stopping vibe")
+          Vibration.cancel()
+        }
       
   }
-  
+
   return (
     <View style={styles.container}>
 
@@ -89,10 +107,11 @@ export default function App() {
       <TouchableOpacity onPress={mainButtonProperties["funct"]}>
         <View style={styles.startButton}>
           <Text style={{ color: '#2e295c', fontSize:100 }}>{mainButtonProperties["text"]}</Text>
+          <ProgressBar progress={Number(progress)} size={500} color={"#2e295c"} width={260} height={40} borderRadius={20} borderWidth={7}/>
          </View>
       </TouchableOpacity>
 
-      <Progress.Bar progress={0.3} size={100} />
+      
 
       <StatusBar style="auto" />
 

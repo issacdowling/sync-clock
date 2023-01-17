@@ -35,7 +35,12 @@ while True:
     
     #Read timer info from start file, save as dict
     timer_json = json.load(open(start_timer_path, 'r'))
-    timerstats = {"remaining_length" : int(timer_json["length"]), "starting_length" : timer_json["length"], "dismissed" : False, "source" : timer_json["source"]}
+
+    try:
+        timerstats = {"remaining_length" : int(timer_json["length"]), "starting_length" : timer_json["length"], "dismissed" : False, "source" : timer_json["source"]}
+    # If we can't parse it, make a blank timer that finishes immediately.
+    except:
+        timerstats = {"remaining_length" : 1, "starting_length" : 0, "dismissed" : False, "source" : "Unknown"}
     
     #Main loop for timing (final run when seconds at 1, since it'll then take 1 away to get 0)
     while timerstats["remaining_length"] >= 1:
@@ -65,6 +70,7 @@ while True:
             timerstats["dismissed"] = True
             with open(timer_left_path, "w") as timer_left:
                 timer_left.write(json.dumps(timerstats))
+            break
         else:
             print("Timer done")
             time.sleep(1)
