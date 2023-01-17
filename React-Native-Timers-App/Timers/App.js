@@ -1,32 +1,38 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, Button, TextInput, TouchableOpacity } from 'react-native';
 
 
 
+// Establish websocket connection
+const ip = "10.0.0.20"
+let socket = new WebSocket("ws://" + ip + ":4762/timer");
+let timer_is_running = false;
+const source = "Phone";
+
+let backgroundColourHex = "#1c1b1f"
 
 export default function App() {
-
-  // Establish websocket connection
-  const ip = "10.0.0.20"
-  let socket = new WebSocket("ws://" + ip + ":4762/timer");
-  let timer_is_running = false;
-  const source = "Phone";
-
 
   // Set state for the text input field
   const [inputtedTimerLength, setInputtedTimerLength] = useState('');
 
   // Set state for the timer output string
-  const [timerDisplayString, setTimerDisplayString] = useState('1')
+  const [timerDisplayString, setTimerDisplayString] = useState('no_c')
+
+  // Set state for whether button is to start or stop timer
+  const [buttonStartsTimer, setButtonStartsTimer] = useState({"funct" : "", "text" : "test"})
 
   // When the connection is opened:
   socket.onopen = function(e) {
     console.log("[open] Connection established");
+    socket.send(JSON.stringify({"hello" : "there"}))
   };
 
   //Takes the text from the input field and turns it into a number of seconds, outputs to 'inputtedTimerLength'
   function getInputLength(inputText) {
+    console.log("intext " +inputText)
+    console.log(inputtedTimerLength)
     setInputtedTimerLength(inputText);
   }
 
@@ -39,6 +45,8 @@ export default function App() {
     socket.send(JSON.stringify({"length" : Number(inputtedTimerLength), "source" : source}))
   }
 
+
+
   // When the connection recieves a message:
 socket.onmessage = function(event) {
   let length;
@@ -48,6 +56,13 @@ socket.onmessage = function(event) {
 
   //If timer-related
   if ("remaining_length" in recieved_json) {
+
+    // If timer running, button stops timer, and vice versa
+    if (recieved_json["dismissed"]) {
+      setButtonStartsTimer({"text" : "START", "funct" : sendStartTimer})
+    } else {
+      setButtonStartsTimer({"text" : "STOP", "funct" : sendStopTimer})
+    }
 
       // Convert seconds into hours:minutes:seconds
       let date = new Date(null);
@@ -65,9 +80,6 @@ socket.onmessage = function(event) {
       
   }
   
-  //document.querySelector("#debug").innerHTML = event.data
-
-
   return (
     <View style={styles.container}>
 
@@ -79,14 +91,9 @@ socket.onmessage = function(event) {
         <Text style={styles.timeLeftText}>{timerDisplayString}</Text>
       </View>
 
-      <TouchableOpacity onPress={sendStartTimer}>
+      <TouchableOpacity onPress={buttonStartsTimer["funct"]}>
         <View style={styles.startButton}>
-          <Text style={{ color: '#2e295c', fontSize:100 }}>START</Text>
-         </View>
-      </TouchableOpacity>
-      <TouchableOpacity onPress={sendStopTimer}>
-        <View style={styles.stopButton}>
-          <Text style={{ color: '#cecae1', fontSize:100 }}>STOP</Text>
+          <Text style={{ color: '#2e295c', fontSize:100 }}>{buttonStartsTimer["text"]}</Text>
          </View>
       </TouchableOpacity>
 
@@ -98,12 +105,12 @@ socket.onmessage = function(event) {
 }
 
 
-
 const styles = StyleSheet.create({
+  
   container: {
     flex: 1,
     padding: 60,
-    backgroundColor: "#1c1b1f",
+    backgroundColor: backgroundColourHex,
     alignContent: 'center'
   },
   titleText: {
@@ -113,7 +120,7 @@ const styles = StyleSheet.create({
   timeLeftText: {
     color: '#c6bffa',
     padding: 16,
-    fontSize: 100,
+    fontSize: 80,
     textAlign: 'center'
   },
   inputText: {
@@ -128,14 +135,6 @@ const styles = StyleSheet.create({
   },
   startButton: {
     backgroundColor: '#c6bffa',
-    alignItems: 'center', 
-    justifyContent: 'center',
-    borderRadius: 100,
-    margin: 15,
-    height: 300,
-  },
-  stopButton: {
-    backgroundColor: '#464457',
     alignItems: 'center', 
     justifyContent: 'center',
     borderRadius: 100,

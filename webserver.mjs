@@ -17,20 +17,24 @@ const timer_file = working_directory + "timer_file.json"
 const start_timer_file = working_directory + "start_timer"
 const stop_timer_file = working_directory + "stop_timer"
 
+let lastSuccessTime = 0;
+let attemptedTime;
+
 //For connections to /timer
 wsTimer.on('connection', function connection(ws) {
-  //Immediately let the client know what's going on.
-  readFile(timer_file, 'utf8', (err, data) => {
-    if (err) {
-      console.error(err);
-      return;
-    }
-    console.log(data);
-    ws.send(data);
-  })
   
   //when a message is received:
   ws.on('message', function incoming(message) {
+
+    //On any recieved message, send client the current state
+    readFile(timer_file, 'utf8', (err, data) => {
+      if (err) {
+        console.error(err);
+        return;
+      }
+      console.log(data);
+      ws.send(data);
+    })
 
     let rec_msg_json = JSON.parse(message)
 
@@ -52,34 +56,43 @@ wsTimer.on('connection', function connection(ws) {
       });
     }
 
-    //Let the client know what's going on if they send a message
-    readFile(timer_file, 'utf8', (err, data) => {
-      if (err) {
-        console.error(err);
-        return;
-      }
-      console.log(data);
-      ws.send(data);
-    })
+      // When the timer file changes, do this:
+  watch(timer_file, (currentStat, prevStat) => {
+    //Read the contents of the file and pass it on
 
-    //Log the recieved message
-    console.log(message.toString('utf-8'))
+    //STUPID DEBOUNCING A FILE WATCHING THING.
+    //GET THE TIME OF THE LAST SUCCESSFUL READ
+    //DON'T DO ANYTHING IF JUST A SUPER QUICK REPEAT
+    attemptedTime = Math.floor(new Date().getTime())
+    console.log(attemptedTime)
+    if (attemptedTime - lastSuccessTime > 100) {
+      lastSuccessTime = attemptedTime
 
-    // When the timer file changes, do this:
-    watch(timer_file, (currentStat, prevStat) => {
-        //Read the contents of the file and pass it on
-        readFile(timer_file, 'utf8', (err, data) => {
+      readFile(timer_file, 'utf8', (err, data) => {
+        if (err) {
+          console.error(err);
+          return;
+        }
+        //Send data to all clients of the websocket
+        wsTimer.clients.forEach( client => {
+          client.send(data);    //Let the client know what's going on if they send a message
+          readFile(timer_file, 'utf8', (err, data) => {
             if (err) {
               console.error(err);
               return;
             }
             console.log(data);
-            //Send data to all clients of the websocket
-            wsTimer.clients.forEach( client => {
-              client.send(data);
-            });
-          });
+            ws.send(data);
+          })
         });
+      });
+    }
+  });
+
+    //Log the recieved message
+    console.log(message.toString('utf-8'))
+
+
   })
 });
 
