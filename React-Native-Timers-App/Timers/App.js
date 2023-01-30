@@ -14,6 +14,7 @@ let progress = 0;
 let received_source = "Unknown";
 //This would always be one input behind if it were a react state, so it's a variable.
 let timerInputString;
+let notified = false;
 
 
 //Custom colours based on Material You phone settings.
@@ -42,6 +43,15 @@ if (Platform.OS === 'android') {
   sourceTextBGColourHex = 'gray';
 }
 // End of custom colour stuff
+
+//NOTIFICATION STUFF///
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: true,
+    shouldSetBadge: true,
+  }),
+});
 
 export default function App() {
 
@@ -112,14 +122,24 @@ export default function App() {
         setTimerDisplayString(length);
 
         }
+        
+
 
         //If timer done but not dismissed, start vibrating
         if (recieved_json["remaining_length"] == 0 && recieved_json["dismissed"] == false) {
-          Vibration.vibrate([80,300], true)
+          
+          if (notified == false) {
+            Notifications.scheduleNotificationAsync({ content: {title: "Timer Complete", body: "00:00"}, trigger: null});
+            notified = true;
+            Vibration.vibrate([80,300], true)
+          }
+          
+          
         } else {
-          Vibration.cancel()
+          notified = false;
+          Vibration.cancel();
+
         }
-      
   }
 
   return (
