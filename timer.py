@@ -21,7 +21,7 @@ while True:
         os.remove(stop_timer_path)
 
     #Make empty timer file
-    blank_timerstats = {"remaining_length" : 0, "starting_length" : 0, "dismissed" : True, "source" : "Blank"}
+    blank_timerstats = {"remaining_length" : 0, "starting_length" : 0, "dismissed" : True, "source" : " "}
     with open(timer_left_path, 'w') as timer_left:
         timer_left.write(json.dumps(blank_timerstats))
 

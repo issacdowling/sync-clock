@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, Button, TextInput, TouchableOpacity, Vibration } from 'react-native';
+import { StyleSheet, Text, View, Button, TextInput, TouchableOpacity, Vibration, PlatformColor, Platform } from 'react-native';
 import ProgressBar from 'react-native-progress/Bar';
+import * as Device from 'expo-device';
+import * as Notifications from 'expo-notifications';
 
 // Establish websocket connection
 const ip = "10.20.11.26"
@@ -9,10 +11,37 @@ let socket = new WebSocket("ws://" + ip + ":4762/timer");
 const source = "Phone";
 let recieved_json;
 let progress = 0;
-
+let received_source = "Unknown";
 //This would always be one input behind if it were a react state, so it's a variable.
 let timerInputString;
-let backgroundColourHex = "#1c1b1f"
+
+
+//Custom colours based on Material You phone settings.
+//If not, just allow defaults.
+let backgroundColourHex;
+let mainButtonBGColourHex;
+let darkTextColourHex;
+let lightTextColourHex;
+let progressBarColourHex;
+let sourceTextBGColourHex;
+
+if (Platform.OS === 'android') {
+  backgroundColourHex = PlatformColor('@android:color/system_neutral2_900');
+  mainButtonBGColourHex = PlatformColor('@android:color/system_accent1_200')
+  darkTextColourHex = PlatformColor('@android:color/system_accent1_900');
+  lightTextColourHex = PlatformColor('@android:color/system_accent1_200');
+  sourceTextBGColourHex = PlatformColor('@android:color/system_accent2_100');
+  // progressBarColourHex = PlatformColor('@android:color/system_accent1_900');
+  progressBarColourHex = "#2e295c";
+} else {
+  backgroundColourHex = "#1c1b1f"
+  mainButtonBGColourHex = "#c6bffa"
+  darkTextColourHex = "#2e295c";
+  lightTextColourHex = "#c6bffa"
+  progressBarColourHex = "#2e295c";
+  sourceTextBGColourHex = 'gray';
+}
+// End of custom colour stuff
 
 export default function App() {
 
@@ -56,6 +85,7 @@ export default function App() {
     if (Number.isNaN(progress)) {
       progress = 0;
     }
+    received_source = recieved_json["source"];
 
 
     //If timer-related
@@ -64,6 +94,7 @@ export default function App() {
       // If timer running, button stops timer, and vice versa
       if (recieved_json["dismissed"]) {
         setMainButtonProperties({"text" : "START", "funct" : sendStartTimer})
+        received_source = ""
       } else {
         setMainButtonProperties({"text" : "STOP", "funct" : sendStopTimer})
       }
@@ -85,9 +116,7 @@ export default function App() {
         //If timer done but not dismissed, start vibrating
         if (recieved_json["remaining_length"] == 0 && recieved_json["dismissed"] == false) {
           Vibration.vibrate([80,300], true)
-          console.log("s")
         } else {
-          console.log("stopping vibe")
           Vibration.cancel()
         }
       
@@ -104,10 +133,16 @@ export default function App() {
         <Text style={styles.timeLeftText}>{timerDisplayString}</Text>
       </View>
 
+      <View style={styles.sourceTextView}>
+        <View style={{alignSelf: 'center'}}>
+          <Text style={styles.sourceText}>{received_source}</Text>
+        </View>
+      </View>
+
       <TouchableOpacity onPress={mainButtonProperties["funct"]}>
-        <View style={styles.startButton}>
-          <Text style={{ color: '#2e295c', fontSize:100 }}>{mainButtonProperties["text"]}</Text>
-          <ProgressBar progress={Number(progress)} size={500} color={"#2e295c"} width={260} height={40} borderRadius={20} borderWidth={7}/>
+        <View style={styles.startButtonView}>
+          <Text style={{ color: darkTextColourHex, fontSize:80, fontWeight: '700' }}>{mainButtonProperties["text"]}</Text>
+          <ProgressBar progress={Number(progress)} size={500} color={progressBarColourHex}  width={260} height={40} borderRadius={20} borderWidth={7}/>
          </View>
       </TouchableOpacity>
 
@@ -133,7 +168,7 @@ const styles = StyleSheet.create({
     padding: 16
   },
   timeLeftText: {
-    color: '#c6bffa',
+    color: lightTextColourHex,
     padding: 16,
     fontSize: 80,
     textAlign: 'center'
@@ -148,12 +183,28 @@ const styles = StyleSheet.create({
     minWidth: 20,
     alignItems: 'center'
   },
-  startButton: {
-    backgroundColor: '#c6bffa',
+  sourceText: {
+    color: darkTextColourHex,
+    fontSize: 20,
+    minWidth: 20,
+    fontWeight: '700',
+    alignItems: 'center',
+  },
+  startButtonView: {
+    backgroundColor: mainButtonBGColourHex,
     alignItems: 'center', 
     justifyContent: 'center',
     borderRadius: 100,
     margin: 15,
     height: 300,
+  },
+  sourceTextView: {
+    backgroundColor: sourceTextBGColourHex,
+    alignSelf: 'center',
+    justifyContent: 'center',
+    borderRadius: 100,
+    margin: 15,
+    height: 30,
+    width: 100
   }
 });
