@@ -3,21 +3,20 @@ import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, Button, TextInput, TouchableOpacity, Vibration, PlatformColor, Platform } from 'react-native';
 import ProgressBar from 'react-native-progress/Bar';
 import * as Device from 'expo-device';
-// import * as TaskManager from 'expo-task-manager';
 import * as Notifications from 'expo-notifications';
 //To ensure that, when switching between data and WIFI, the app doesn't need to be restarted
 import ReconnectingWebSocket from 'reconnecting-websocket';
 
 // Establish websocket connection
-const ip = "10.20.11.26"
+const ip = "10.0.0.200"
 let socket = new ReconnectingWebSocket("ws://" + ip + ":4762/timer");
-let source = "PC";
-//This would always be one input behind if it were a react state, so it's a variable.
-let timerInputString;
 let progress = 0;
 let received_source = "Unknown";
 let notified = false;
 let recieved_json;
+let source;
+//This would always be one input behind if it were a react state, so it's a variable.
+let timerInputString;
 
 //Custom colours based on Material You phone settings.
 //If not, just allow defaults.
@@ -36,17 +35,15 @@ if (Platform.OS === 'android') {
   sourceTextBGColourHex = PlatformColor('@android:color/system_accent2_100');
   // progressBarColourHex = PlatformColor('@android:color/system_accent1_900');
   progressBarColourHex = "#2e295c";
-  //SET SOURCE TO YOUR PHONE'S MODEL
-  source = Device.modelName
 } else {
   backgroundColourHex = "#1c1b1f"
   mainButtonBGColourHex = "#c6bffa"
   darkTextColourHex = "#2e295c";
   lightTextColourHex = "#c6bffa"
   progressBarColourHex = "#2e295c";
-  sourceTextBGColourHex = 'gray';
+  sourceTextBGColourHex = "#E6E6E3";
 }
-// End of custom colour stuff
+
 
 if (Platform.OS === 'android') {
   //NOTIFICATION STUFF///
@@ -58,17 +55,15 @@ if (Platform.OS === 'android') {
       shouldSetBadge: true,
     }),
   });
-
-  // //Hopefully keep the app alive in the background
-  // const BACKGROUND_NOTIFICATION_TASK = 'BACKGROUND-NOTIFICATION-TASK';
-  // TaskManager.defineTask(BACKGROUND_NOTIFICATION_TASK, ({ data, error, executionInfo }) => {
-  //   console.log('BG Notif got');
-  // });
-
-  // Notifications.registerTaskAsync(BACKGROUND_NOTIFICATION_TASK);
 }
 
-
+//SET SOURCE TO YOUR DEVICE NAME
+if (Device.modelName != null) {
+  source = Device.modelName
+} else {
+  source = "Web"
+}
+  
 export default function App() {
 
   // Set state for the timer output string
