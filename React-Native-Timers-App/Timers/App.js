@@ -2,12 +2,15 @@ import { useState, useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, Button, TextInput, TouchableOpacity, Vibration, PlatformColor, Platform } from 'react-native';
 import ProgressBar from 'react-native-progress/Bar';
-import * as Device from 'expo-device';
+// import * as Device from 'expo-device';
+// import * as TaskManager from 'expo-task-manager';
 import * as Notifications from 'expo-notifications';
+//To ensure that, when switching between data and WIFI, the app doesn't need to be restarted
+import ReconnectingWebSocket from 'reconnecting-websocket';
 
 // Establish websocket connection
 const ip = "10.20.11.26"
-let socket = new WebSocket("ws://" + ip + ":4762/timer");
+let socket = new ReconnectingWebSocket("ws://" + ip + ":4762/timer");
 const source = "PC";
 //This would always be one input behind if it were a react state, so it's a variable.
 let timerInputString;
@@ -43,14 +46,26 @@ if (Platform.OS === 'android') {
 }
 // End of custom colour stuff
 
-//NOTIFICATION STUFF///
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldPlaySound: true,
-    shouldSetBadge: true,
-  }),
-});
+if (Platform.OS === 'android') {
+  //NOTIFICATION STUFF///
+  //MAKE IT PLAY SOUND AND BUZZ THE PHONE//
+  Notifications.setNotificationHandler({
+    handleNotification: async () => ({
+      shouldShowAlert: true,
+      shouldPlaySound: true,
+      shouldSetBadge: true,
+    }),
+  });
+
+  // //Hopefully keep the app alive in the background
+  // const BACKGROUND_NOTIFICATION_TASK = 'BACKGROUND-NOTIFICATION-TASK';
+  // TaskManager.defineTask(BACKGROUND_NOTIFICATION_TASK, ({ data, error, executionInfo }) => {
+  //   console.log('BG Notif got');
+  // });
+
+  // Notifications.registerTaskAsync(BACKGROUND_NOTIFICATION_TASK);
+}
+
 
 export default function App() {
 
@@ -96,7 +111,6 @@ export default function App() {
     }
     received_source = recieved_json["source"];
 
-
     //If timer-related
     if ("remaining_length" in recieved_json) {
 
@@ -136,7 +150,7 @@ export default function App() {
               notified = true;
               Vibration.vibrate([80,300], true)
             }
-            
+           
           //Once dismissed, stop vibrating and dismiss all notifs.
           } else {
               notified = false;
