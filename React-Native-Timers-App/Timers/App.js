@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, Button, TextInput, TouchableOpacity, Vibration, PlatformColor, Platform } from 'react-native';
 import ProgressBar from 'react-native-progress/Bar';
-// import * as Device from 'expo-device';
+import * as Device from 'expo-device';
 // import * as TaskManager from 'expo-task-manager';
 import * as Notifications from 'expo-notifications';
 //To ensure that, when switching between data and WIFI, the app doesn't need to be restarted
@@ -11,7 +11,7 @@ import ReconnectingWebSocket from 'reconnecting-websocket';
 // Establish websocket connection
 const ip = "10.20.11.26"
 let socket = new ReconnectingWebSocket("ws://" + ip + ":4762/timer");
-const source = "PC";
+let source = "PC";
 //This would always be one input behind if it were a react state, so it's a variable.
 let timerInputString;
 let progress = 0;
@@ -36,6 +36,8 @@ if (Platform.OS === 'android') {
   sourceTextBGColourHex = PlatformColor('@android:color/system_accent2_100');
   // progressBarColourHex = PlatformColor('@android:color/system_accent1_900');
   progressBarColourHex = "#2e295c";
+  //SET SOURCE TO YOUR PHONE'S MODEL
+  source = Device.modelName
 } else {
   backgroundColourHex = "#1c1b1f"
   mainButtonBGColourHex = "#c6bffa"
