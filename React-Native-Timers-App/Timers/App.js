@@ -8,14 +8,13 @@ import * as Notifications from 'expo-notifications';
 // Establish websocket connection
 const ip = "10.20.11.26"
 let socket = new WebSocket("ws://" + ip + ":4762/timer");
-const source = "Phone";
-let recieved_json;
-let progress = 0;
-let received_source = "Unknown";
+const source = "PC";
 //This would always be one input behind if it were a react state, so it's a variable.
 let timerInputString;
+let progress = 0;
+let received_source = "Unknown";
 let notified = false;
-
+let recieved_json;
 
 //Custom colours based on Material You phone settings.
 //If not, just allow defaults.
@@ -122,24 +121,31 @@ export default function App() {
         setTimerDisplayString(length);
 
         }
-        
 
-
-        //If timer done but not dismissed, start vibrating
-        if (recieved_json["remaining_length"] == 0 && recieved_json["dismissed"] == false) {
-          
-          if (notified == false) {
-            Notifications.scheduleNotificationAsync({ content: {title: "Timer Complete", body: "00:00"}, trigger: null});
-            notified = true;
-            Vibration.vibrate([80,300], true)
-          }
-          
-          
-        } else {
-          notified = false;
-          Vibration.cancel();
-
+        //If user is on web, handle notifs/vibration differently
+        if (Platform.OS === 'web') {
+          //Won't do anything with notifs or vibration
         }
+        else {
+
+          //If timer done but not dismissed, start vibrating and send notif.
+          if (recieved_json["remaining_length"] == 0 && recieved_json["dismissed"] == false) {
+            
+            if (notified == false) {
+              Notifications.scheduleNotificationAsync({ content: {title: "Timer Complete", body: "00:00"}, trigger: null});
+              notified = true;
+              Vibration.vibrate([80,300], true)
+            }
+            
+          //Once dismissed, stop vibrating and dismiss all notifs.
+          } else {
+              notified = false;
+              Notifications.dismissAllNotificationsAsync();
+              Vibration.cancel();
+            
+          }
+        }
+
   }
 
   return (
@@ -165,8 +171,6 @@ export default function App() {
           <ProgressBar progress={Number(progress)} size={500} color={progressBarColourHex}  width={260} height={40} borderRadius={20} borderWidth={7}/>
          </View>
       </TouchableOpacity>
-
-      
 
       <StatusBar style="auto" />
 
