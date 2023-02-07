@@ -1,23 +1,24 @@
 import sys
 import gi
-import random
 import time
-import requests
 gi.require_version('Gtk', '4.0')
 gi.require_version('Adw', '1')
 from gi.repository import Gtk, Adw, GLib
 import json
+import signal
+import subprocess
 
-URL = "http://10.0.0.3:4761"
+working_dir = "/tmp/issacdowling-timers/"
+timer_info_file = working_dir + "timer_sync_info.json"
+timer_stop_file = working_dir + "timer_stop"
+timer_start_file = working_dir + "timer_start"
 
 class MainWindow(Gtk.ApplicationWindow):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         
-
+        #Once per second, refresh known info about the timer
         GLib.timeout_add(1000, self.refresh_stuff)
-
-        test = random.randint(1,20)
 
         #Basic window setup
         self.set_default_size(300, 250)
@@ -26,8 +27,6 @@ class MainWindow(Gtk.ApplicationWindow):
         #Create header with button
         self.header = Gtk.HeaderBar()
         self.set_titlebar(self.header)
-        self.connect_timer_button = Gtk.Button(label=test)
-        self.header.pack_start(self.connect_timer_button)
 
         #Create boxes
         self.box_timer_main = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, halign=Gtk.Align.CENTER, valign=Gtk.Align.CENTER, spacing=20, margin_start=20, margin_end=20, margin_top=20, margin_bottom=20)
@@ -59,33 +58,45 @@ class MainWindow(Gtk.ApplicationWindow):
 
     def check_timer(self):
         global timer
-        try:
-            timer = requests.get(URL + "/timer").json()
-        except:
-            timer = {"running" : False, "dismissed" : True}
-        if timer["running"] == False:
-            if timer["dismissed"] == False:
-                self.timer_progress_bar.set_text("Timer done")
-                self.timer_progress_bar.set_fraction(0)
+        with open(timer_info_file, 'r') as timer_raw:
+            #This re-reads the file if the first read fails
+            try:
+                timer = json.loads(timer_raw.read())
+            except:
+                time.sleep(0.1)
+                timer = json.loads(timer_raw.read())
+
+            #If timer at zero, check if dismissed. If not, say timer done
+            if timer["remaining_length"] == 0:
+                if timer["dismissed"] == False:
+                    self.timer_progress_bar.set_text("Timer done")
+                    self.timer_progress_bar.set_fraction(0)
+                else:
+                    self.timer_progress_bar.set_text("No Timer")
+                    self.timer_progress_bar.set_fraction(0)
+            #If timer not at zero, update the progress bar with the stats
             else:
-                self.timer_progress_bar.set_text("No Timer")
-                self.timer_progress_bar.set_fraction(0)
-        else:
-            self.timer_progress_bar.set_text(str(timer["length"]))
-            self.timer_progress_bar.set_fraction(timer["length"]/timer["starting_length"])
+                self.timer_progress_bar.set_text(str(timer["remaining_length"]))
+                self.timer_progress_bar.set_fraction(timer["remaining_length"]/timer["starting_length"])
         return True                
 
     def stop_timer(self, button):
-        stop = requests.post(URL + "/timer_stop").text
-        print(stop)
+        #Make stop file to be found by the timer-sync program
+        with open(timer_stop_file, 'w') as timer_stop:
+            pass
+        print("stop")
 
     def start_timer(self,button):
-        start_timer_json = {"length" : int(self.validate_timer_input()), "source" : "Linux PC"}
-        send_start_timer_json = requests.post(URL + "/timer_start", json=start_timer_json)
+        #Make start file with desired length to be found by the timer-sync program
+        start_timer_json = {"length" : int(self.validate_timer_input())}
+        with open(timer_start_file, 'w') as timer_start:
+            timer_start.write(json.dumps(start_timer_json))
         print(start_timer_json)
 
+    #Ensures that the timer input is valid
     def validate_timer_input(self):
 
+        #Get each letter as an array from the text field
         user_input = self.timer_input_field.get_text().split()
         length = 0
 
@@ -122,12 +133,8 @@ class MainWindow(Gtk.ApplicationWindow):
                 length = 0
 
         return length
-        
 
-
-        
-        #print(len(user_input.split()))
-
+    #Refreshes UI and checks timer stats
     def refresh_stuff(self):
         global timer
         #Send web request to check timer server
@@ -161,3 +168,5 @@ class MyApp(Adw.Application):
 app = MyApp(application_id="com.issacdowling.timers")
 app.run(sys.argv)
 
+#Ends all background timer syncing processes related to the app when window is closed
+subprocess.run("kill $(pgrep -f 'timer-sync-linux-app.py')", shell=True)
