@@ -3,7 +3,7 @@ import gi
 import time
 gi.require_version('Gtk', '4.0')
 gi.require_version('Adw', '1')
-from gi.repository import Gtk, Adw, GLib
+from gi.repository import Gtk, Adw, GLib, Notify
 import json
 import signal
 import subprocess
@@ -12,6 +12,34 @@ working_dir = "/tmp/issacdowling-timers/"
 timer_info_file = working_dir + "timer_sync_info.json"
 timer_stop_file = working_dir + "timer_stop"
 timer_start_file = working_dir + "timer_start"
+
+notification_showing = False
+
+#Defined outside of window since no data from window is needed, and
+#this allows me to use this function in a button in the "Timer Done" notification
+def stop_timer_from_notif(a,b,c):
+    #Make stop file to be found by the timer-sync program
+    with open(timer_stop_file, 'w') as timer_stop:
+        pass
+    print("stop")
+
+#Initialise timer done notification
+Notify.init("Timers")
+timer_done_notification = Notify.Notification.new(
+    "Timer Complete",
+    "00:00",
+)
+
+timer_done_notification.add_action(
+"action_click",
+"Stop Timer",
+stop_timer_from_notif,
+None # Arguments
+)
+
+timer_done_notification.set_timeout(Notify.EXPIRES_NEVER)
+
+
 
 class MainWindow(Gtk.ApplicationWindow):
     def __init__(self, *args, **kwargs):
@@ -58,6 +86,7 @@ class MainWindow(Gtk.ApplicationWindow):
 
     def check_timer(self):
         global timer
+        global notification_showing
         with open(timer_info_file, 'r') as timer_raw:
             #This re-reads the file if the first read fails
             try:
@@ -71,27 +100,34 @@ class MainWindow(Gtk.ApplicationWindow):
                 if timer["dismissed"] == False:
                     self.timer_progress_bar.set_text("Timer done")
                     self.timer_progress_bar.set_fraction(0)
+                    #If notification not yet sent, send it, then
+                    #set status as sent so it's not repeated
+                    if notification_showing == False:
+                        timer_done_notification.show()
+                        notification_showing = True
                 else:
                     self.timer_progress_bar.set_text("No Timer")
                     self.timer_progress_bar.set_fraction(0)
+                    #Reset notification sent status once timer reset.
+                    notification_showing = False
             #If timer not at zero, update the progress bar with the stats
             else:
                 self.timer_progress_bar.set_text(str(timer["remaining_length"]))
                 self.timer_progress_bar.set_fraction(timer["remaining_length"]/timer["starting_length"])
-        return True                
+        return True      
+
+    def start_timer(self, button):
+        #Make start file with desired length to be found by the timer-sync program
+        start_timer_json = {"length" : int(self.validate_timer_input())}
+        with open(timer_start_file, 'w') as timer_start:
+            timer_start.write(json.dumps(start_timer_json))
+        print(start_timer_json)          
 
     def stop_timer(self, button):
         #Make stop file to be found by the timer-sync program
         with open(timer_stop_file, 'w') as timer_stop:
             pass
         print("stop")
-
-    def start_timer(self,button):
-        #Make start file with desired length to be found by the timer-sync program
-        start_timer_json = {"length" : int(self.validate_timer_input())}
-        with open(timer_start_file, 'w') as timer_start:
-            timer_start.write(json.dumps(start_timer_json))
-        print(start_timer_json)
 
     #Ensures that the timer input is valid
     def validate_timer_input(self):
@@ -153,7 +189,6 @@ class MainWindow(Gtk.ApplicationWindow):
             self.button_stop_timer.set_sensitive(False)
 
         return True
-
 
 
 class MyApp(Adw.Application):
