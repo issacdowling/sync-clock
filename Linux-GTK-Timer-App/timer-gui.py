@@ -46,7 +46,7 @@ class MainWindow(Gtk.ApplicationWindow):
         super().__init__(*args, **kwargs)
         
         #Once per second, refresh known info about the timer
-        GLib.timeout_add(1000, self.refresh_stuff)
+        GLib.timeout_add(500, self.refresh_stuff)
 
         #Basic window setup
         self.set_default_size(300, 250)
