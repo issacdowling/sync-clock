@@ -1,3 +1,5 @@
+##KNOWN HUGE BUG, WHEN WEBSOCKET DISCONNECTS AFTER BEING CONNECTED, RUNAWAY CPU USAGE
+
 import asyncio
 import websockets
 import json

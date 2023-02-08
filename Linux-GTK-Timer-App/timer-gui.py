@@ -85,9 +85,10 @@ class MainWindow(Gtk.ApplicationWindow):
     def check_timer(self):
         global timer
         global notification_showing
+
+        #Attempt to read file. #If it fails twice, set to 0 and done.
         with open(timer_info_file, 'r') as timer_raw:
             #This re-reads the file if the first read fails
-            #If it fails twice, set to 0 and done.
             try:
                 timer = json.loads(timer_raw.read())
             except:
@@ -95,7 +96,7 @@ class MainWindow(Gtk.ApplicationWindow):
                 try:
                     timer = json.loads(timer_raw.read())
                 except:
-                    timer = {"remaining_length" : 0, "starting_length" : 0,"dismissed" : True}
+                    pass
 
             #If timer at zero, check if dismissed. If not, say timer done
             if timer["remaining_length"] == 0:
