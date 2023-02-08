@@ -5,7 +5,7 @@ from time import sleep
 from subprocess import call
 import os
 
-webserver_url = 'ws://10.0.0.200:4762/timer'
+webserver_url = 'ws://10.20.11.26:4762/timer'
 working_dir = "/tmp/issacdowling-timers/"
 timer_info_file = working_dir + "timer_sync_info.json"
 timer_stop_file = working_dir + "timer_stop"
@@ -15,18 +15,24 @@ timer_finished_audio = "assets/timerchime.wav"
 if not os.path.exists("/tmp/issacdowling-timers/"):
     os.makedirs("/tmp/issacdowling-timers/")
 
+if os.path.exists("/tmp/issacdowling-timers/timer_sync_info.json"):
+    os.remove("/tmp/issacdowling-timers/timer_sync_info.json")
+
 source = "Linux PC"
 
 async def get_timer_info():
     async with websockets.connect(webserver_url) as websocket:
         #Blank timer stats initialise at start
         timer = {"remaining_length" : 0, "dismissed" : True}
+
         #Constantly running loop, do everything within all of the time
         while True:
+
             #If stop file exists, send websocket message to stop the timer and delete the file
             if os.path.exists(timer_stop_file):
                 os.remove(timer_stop_file)
                 await websocket.send(json.dumps({"stop" : "please"}))
+
             #If start file exists, send websocket message with the info from the start file
             if os.path.exists(timer_start_file):
                 start_info = json.load(open(timer_start_file, 'r'))
@@ -40,11 +46,12 @@ async def get_timer_info():
                 timer = json.loads(await asyncio.wait_for(websocket.recv(), 0.3))
             except:
                 pass
-            #Save timer info to external file
             
+            #Save timer info to external file
             timer_file = open(timer_info_file, 'w')
             timer_file.write(json.dumps(timer))
             timer_file.close()
+
             #If timer is at 0, but not dismissed, play sound.
             if timer["remaining_length"] == 0:
                 if timer["dismissed"] == False:

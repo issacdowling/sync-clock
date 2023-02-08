@@ -39,8 +39,6 @@ None # Arguments
 
 timer_done_notification.set_timeout(Notify.EXPIRES_NEVER)
 
-
-
 class MainWindow(Gtk.ApplicationWindow):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -89,11 +87,15 @@ class MainWindow(Gtk.ApplicationWindow):
         global notification_showing
         with open(timer_info_file, 'r') as timer_raw:
             #This re-reads the file if the first read fails
+            #If it fails twice, set to 0 and done.
             try:
                 timer = json.loads(timer_raw.read())
             except:
                 time.sleep(0.1)
-                timer = json.loads(timer_raw.read())
+                try:
+                    timer = json.loads(timer_raw.read())
+                except:
+                    timer = {"remaining_length" : 0, "starting_length" : 0,"dismissed" : True}
 
             #If timer at zero, check if dismissed. If not, say timer done
             if timer["remaining_length"] == 0:
@@ -189,7 +191,6 @@ class MainWindow(Gtk.ApplicationWindow):
             self.button_stop_timer.set_sensitive(False)
 
         return True
-
 
 class MyApp(Adw.Application):
     def __init__(self, **kwargs):

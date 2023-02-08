@@ -27,7 +27,7 @@ while True:
 
     #Don't continue until timer should be started (start_timer exists)
     while not os.path.exists(start_timer_path):
-        time.sleep(1)
+        time.sleep(0.4)
         pass
     
     #Give time for JSON file to be fully created (otherwise read error may happen)
