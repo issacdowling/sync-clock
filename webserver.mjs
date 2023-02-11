@@ -16,6 +16,8 @@ const working_directory = ""
 const timer_file = working_directory + "timer_file.json"
 const start_timer_file = working_directory + "start_timer"
 const stop_timer_file = working_directory + "stop_timer"
+const start_stopwatch_file = working_directory + "start_stopwatch"
+const stop_stopwatch_file = working_directory + "stop_stopwatch"
 
 let lastSuccessTime = 0;
 let attemptedTime;
@@ -56,40 +58,40 @@ wsTimer.on('connection', function connection(ws) {
       });
     }
 
-      // When the timer file changes, do this:
-  watch(timer_file, (currentStat, prevStat) => {
-    //Read the contents of the file and pass it on
+    // When the timer file changes, do this:
+    watch(timer_file, (currentStat, prevStat) => {
+      //Read the contents of the file and pass it on
 
-    //STUPID DEBOUNCING A FILE WATCHING THING.
-    //GET THE TIME OF THE LAST SUCCESSFUL READ
-    //DON'T DO ANYTHING IF JUST A SUPER QUICK REPEAT
-    attemptedTime = Math.floor(new Date().getTime())
-    if (attemptedTime - lastSuccessTime > 100) {
-      lastSuccessTime = attemptedTime
+      //STUPID DEBOUNCING A FILE WATCHING THING.
+      //GET THE TIME OF THE LAST SUCCESSFUL READ
+      //DON'T DO ANYTHING IF JUST A SUPER QUICK REPEAT
+      attemptedTime = Math.floor(new Date().getTime())
+      if (attemptedTime - lastSuccessTime > 100) {
+        lastSuccessTime = attemptedTime
 
-      readFile(timer_file, 'utf8', (err, data) => {
-        if (err) {
-          console.error(err);
-          return;
-        }
-        //Send data to all clients of the websocket
-        wsTimer.clients.forEach( client => {
-          client.send(data);    //Let the client know what's going on if they send a message
-          readFile(timer_file, 'utf8', (err, data) => {
-            if (err) {
-              console.error(err);
-              return;
-            }
-            console.log(data);
-            ws.send(data);
-          })
+        readFile(timer_file, 'utf8', (err, data) => {
+          if (err) {
+            console.error(err);
+            return;
+          }
+          //Send data to all clients of the websocket
+          wsTimer.clients.forEach( client => {
+            client.send(data);    //Let the client know what's going on if they send a message
+            readFile(timer_file, 'utf8', (err, data) => {
+              if (err) {
+                console.error(err);
+                return;
+              }
+              console.log(data);
+              ws.send(data);
+            })
+          });
         });
-      });
-    }
-  });
+      }
+    });
 
-    //Log the recieved message
-    console.log(message.toString('utf-8'))
+      //Log the recieved message
+      console.log(message.toString('utf-8'))
 
 
   })

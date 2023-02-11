@@ -8,7 +8,7 @@ import * as Notifications from 'expo-notifications';
 import ReconnectingWebSocket from 'reconnecting-websocket';
 
 // Establish websocket connection
-const ip = "10.0.0.200"
+const ip = "10.20.11.26"
 let socket = new ReconnectingWebSocket("ws://" + ip + ":4762/timer");
 let progress = 0;
 let received_source = "Unknown";
