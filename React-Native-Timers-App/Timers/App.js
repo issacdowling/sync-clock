@@ -12,10 +12,13 @@ import ReconnectingWebSocket from 'reconnecting-websocket';
 // Establish websocket connection
 const ip = "10.0.0.20"
 let TimerSocket = new ReconnectingWebSocket("ws://" + ip + ":4762/timer");
-let progress = 0;
-let received_source = "Unknown";
+let StopSocket = new ReconnectingWebSocket("ws://" + ip + ":4762/stopwatch");
+let TimerProgress = 0;
+let TimerReceivedSource = "Unknown";
+let StopReceivedSource = "Unknown";
 let notified = false;
-let recieved_json;
+let TimerReceivedJson;
+let StopReceivedJson;
 let source;
 //This would always be one input behind if it were a react state, so it's a variable.
 let timerInputString;
@@ -75,12 +78,21 @@ export default function App() {
   const [timerDisplayString, setTimerDisplayString] = useState('no_c')
 
   // Set state for whether button is to start or stop timer
-  const [mainButtonProperties, setMainButtonProperties] = useState({"funct" : "", "text" : "test"})
+  const [mainTimerButtonProperties, setMainTimerButtonProperties] = useState({"funct" : "", "text" : "test"})
+
+  // Set state for whether button is to start or stop timer
+  const [mainStopwatchButtonProperties, setMainStopwatchButtonProperties] = useState({"funct" : "", "text" : "test"})
+
+  // When the timer connection is opened:
+  TimerSocket.onopen = function(e) {
+    console.log("Timer Connection established");
+    TimerSocket.send(JSON.stringify({"hello" : "timer"}))
+  };
 
   // When the connection is opened:
-  TimerSocket.onopen = function(e) {
-    console.log("[open] Connection established");
-    TimerSocket.send(JSON.stringify({"hello" : "there"}))
+  StopSocket.onopen = function(e) {
+    console.log("Stopwatch Connection established");
+    TimerSocket.send(JSON.stringify({"hello" : "stopwatch"}))
   };
 
   //Takes the text from the input field and turns it into a number of seconds, outputs to 'inputtedTimerLength'
@@ -91,40 +103,51 @@ export default function App() {
   //Sends the JSON for stopping the timer
   function sendStopTimer() {
     TimerSocket.send(JSON.stringify({"stop" : "please"}));
-    console.log(recieved_json)
   }
 
   function sendStartTimer() {
     TimerSocket.send(JSON.stringify({"length" : Number(timerInputString), "source" : source}))
   }
 
-  // When the connection recieves a message:
+  function sendStartStopwatch() {
+    StopSocket.send(JSON.stringify({"source" : source}))
+  }
+
+  function sendStopStopwatch() {
+    StopSocket.send(JSON.stringify({"stop" : "please"}))
+  }
+
+  function sendClearStopwatch() {
+    StopSocket.send(JSON.stringify({"clear" : "please"}))
+  }
+
+  // When the stopwatch connection recieves a message:
   TimerSocket.onmessage = function(event) {
     let length;
-    console.log(`[message] Data received from server: ${event.data}`);
-    recieved_json = JSON.parse(event.data)
+    console.log(`Timer Data received from server: ${event.data}`);
+    TimerReceivedJson = JSON.parse(event.data)
     //The percentage of the timer remaining. If NaN, make sure it's 0, or things will break.
     //Also, things break if it goes over 1.
-    progress = (recieved_json["remaining_length"] / recieved_json["starting_length"]);
-    if (Number.isNaN(progress)) {
-      progress = 0;
+    TimerProgress = (TimerReceivedJson["remaining_length"] / TimerReceivedJson["starting_length"]);
+    if (Number.isNaN(TimerProgress)) {
+      TimerProgress = 0;
     }
-    received_source = recieved_json["source"];
+    TimerReceivedSource = TimerReceivedJson["source"];
 
     //If timer-related
-    if ("remaining_length" in recieved_json) {
+    if ("remaining_length" in TimerReceivedJson) {
 
       // If timer running, button stops timer, and vice versa
-      if (recieved_json["dismissed"]) {
-        setMainButtonProperties({"text" : "START", "funct" : sendStartTimer})
-        received_source = ""
+      if (TimerReceivedJson["dismissed"]) {
+        setMainTimerButtonProperties({"text" : "START", "funct" : sendStartTimer})
+        TimerReceivedSource = ""
       } else {
-        setMainButtonProperties({"text" : "STOP", "funct" : sendStopTimer})
+        setMainTimerButtonProperties({"text" : "STOP", "funct" : sendStopTimer})
       }
 
         // Convert seconds into hours:minutes:seconds
         let date = new Date(null);
-        date.setSeconds(recieved_json["remaining_length"]);
+        date.setSeconds(TimerReceivedJson["remaining_length"]);
         length = date.toISOString().substr(11, 8);
         // Checks if hours are empty, shorten if so.
         if (length.slice(0,3) == "00:") {
@@ -143,7 +166,7 @@ export default function App() {
         else {
 
           //If timer done but not dismissed, start vibrating and send notif.
-          if (recieved_json["remaining_length"] == 0 && recieved_json["dismissed"] == false) {
+          if (TimerReceivedJson["remaining_length"] == 0 && TimerReceivedJson["dismissed"] == false) {
             
             if (notified == false) {
               Notifications.scheduleNotificationAsync({ content: {title: "Timer Complete", body: "00:00"}, trigger: null});
@@ -162,6 +185,37 @@ export default function App() {
 
   }
 
+  // When the connection recieves a message:
+  StopSocket.onmessage = function(sevent) {
+    let length;
+    console.log(`Stopwatch Data received from server: ${sevent.data}`);
+    StopReceivedJson = JSON.parse(sevent.data)
+
+    StopReceivedSource = StopReceivedJson["source"];
+
+    //If stopwatch-related
+    if ("source" in StopReceivedJson) {
+
+      // If timer running, button stops timer, and vice versa
+      if (StopReceivedJson["dismissed"]) {
+        setMainStopwatchButtonProperties({"text" : "START", "funct" : sendStartStopwatch})
+        StopReceivedSource = ""
+      } else {
+        setMainStopwatchButtonProperties({"text" : "PAUSE", "funct" : sendStopStopwatch})
+      }
+
+        // Convert seconds into hours:minutes:seconds
+        let date = new Date(null);
+        date.setSeconds(StopReceivedJson["seconds"]);
+        length = date.toISOString().substr(11, 8);
+        // Checks if hours are empty, shorten if so.
+        if (length.slice(0,3) == "00:") {
+            length = length.slice(3)
+        }
+
+    }
+  }
+
   const Stack = createNativeStackNavigator();
 
   const TimerScreen = ({navigation}) => {
@@ -177,14 +231,14 @@ export default function App() {
 
         <View style={TimerStyles.sourceTextView}>
           <View style={{alignSelf: 'center'}}>
-            <Text style={TimerStyles.sourceText}>{received_source}</Text>
+            <Text style={TimerStyles.sourceText}>{TimerReceivedSource}</Text>
           </View>
         </View>
 
-        <TouchableOpacity onPress={mainButtonProperties["funct"]}>
+        <TouchableOpacity onPress={mainTimerButtonProperties["funct"]}>
           <View style={TimerStyles.startButtonView}>
-            <Text style={{ color: darkTextColourHex, fontSize:80, fontWeight: '700' }}>{mainButtonProperties["text"]}</Text>
-            <ProgressBar progress={Number(progress)} size={500} color={progressBarColourHex}  width={260} height={40} borderRadius={20} borderWidth={7}/>
+            <Text style={{ color: darkTextColourHex, fontSize:80, fontWeight: '700' }}>{mainTimerButtonProperties["text"]}</Text>
+            <ProgressBar progress={Number(TimerProgress)} size={500} color={progressBarColourHex}  width={260} height={40} borderRadius={20} borderWidth={7}/>
           </View>
         </TouchableOpacity>
 
@@ -206,13 +260,13 @@ export default function App() {
 
         <View style={StopwatchStyles.sourceTextView}>
           <View style={{alignSelf: 'center'}}>
-            <Text style={StopwatchStyles.sourceText}>{received_source}</Text>
+            <Text style={StopwatchStyles.sourceText}>{StopReceivedSource}</Text>
           </View>
         </View>
 
-        <TouchableOpacity onPress={mainButtonProperties["funct"]}>
+        <TouchableOpacity onPress={mainStopwatchButtonProperties["funct"]}>
           <View style={StopwatchStyles.startButtonView}>
-            <Text style={{ color: darkTextColourHex, fontSize:80, fontWeight: '700' }}>{mainButtonProperties["text"]}</Text>
+            <Text style={{ color: darkTextColourHex, fontSize:80, fontWeight: '700' }}>{mainStopwatchButtonProperties["text"]}</Text>
           </View>
         </TouchableOpacity>
 
