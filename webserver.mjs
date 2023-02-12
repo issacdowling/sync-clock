@@ -22,8 +22,11 @@ const clear_stopwatch_file = working_directory + "clear_stopwatch"
 const pause_stopwatch_file = working_directory + "pause_stopwatch"
 const stopwatch_file = working_directory + "stopwatch_file.json"
 
-let lastSuccessTime = 0;
-let attemptedTime;
+let timerLastSuccessTime = 0;
+let timerAttemptedTime;
+
+let stopwatchLastSuccessTime = 0;
+let stopwatchAttemptedTime;
 
 //For connections to /timer
 wsTimer.on('connection', function connection(ws) {
@@ -68,9 +71,9 @@ wsTimer.on('connection', function connection(ws) {
       //STUPID DEBOUNCING A FILE WATCHING THING.
       //GET THE TIME OF THE LAST SUCCESSFUL READ
       //DON'T DO ANYTHING IF JUST A SUPER QUICK REPEAT
-      attemptedTime = Math.floor(new Date().getTime())
-      if (attemptedTime - lastSuccessTime > 100) {
-        lastSuccessTime = attemptedTime
+      timerAttemptedTime = Math.floor(new Date().getTime())
+      if (timerAttemptedTime - timerLastSuccessTime > 100) {
+        timerLastSuccessTime = timerAttemptedTime
 
         readFile(timer_file, 'utf8', (err, data) => {
           if (err) {
@@ -101,9 +104,9 @@ wsTimer.on('connection', function connection(ws) {
 });
 
 //For connections to /stopwatch
-wsStopWatch.on('connection', function connection(ws) {
+wsStopWatch.on('connection', function connection(wss) {
   //when a message is received:
-  ws.on('message', function incoming(message) {
+  wss.on('message', function incoming(message) {
 
     //On any recieved message, send client the current state
     readFile(stopwatch_file, 'utf8', (err, data) => {
@@ -112,7 +115,7 @@ wsStopWatch.on('connection', function connection(ws) {
         return;
       }
       console.log(data);
-      ws.send(data);
+      wss.send("data");
     })
 
     let rec_msg_json = JSON.parse(message)
@@ -151,9 +154,9 @@ wsStopWatch.on('connection', function connection(ws) {
       //STUPID DEBOUNCING A FILE WATCHING THING.
       //GET THE TIME OF THE LAST SUCCESSFUL READ
       //DON'T DO ANYTHING IF JUST A SUPER QUICK REPEAT
-      attemptedTime = Math.floor(new Date().getTime())
-      if (attemptedTime - lastSuccessTime > 100) {
-        lastSuccessTime = attemptedTime
+      stopwatchAttemptedTime = Math.floor(new Date().getTime())
+      if (stopwatchAttemptedTime - stopwatchLastSuccessTime > 100) {
+        stopwatchLastSuccessTime = stopwatchAttemptedTime
 
         readFile(stopwatch_file, 'utf8', (err, data) => {
           if (err) {
@@ -169,7 +172,7 @@ wsStopWatch.on('connection', function connection(ws) {
                 return;
               }
               console.log(data);
-              ws.send(data);
+              wss.send("data");
             })
           });
         });
