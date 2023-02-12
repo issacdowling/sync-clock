@@ -8,7 +8,7 @@ import {watch, watchFile, readFile, writeFile} from 'fs';
 //Create server to listen for connections, and the "sub-servers" (?) to handle requests based on path.
 const server = createServer();
 const wsTimer = new WebSocketServer({ noServer: true });
-const wsNotTimer = new WebSocketServer({ noServer: true });
+const wsStopWatch = new WebSocketServer({ noServer: true });
 
 const serverPort = 4762
 //When testing, make it somewhere other than the repo, or five server will auto refresh, breaking things
@@ -16,8 +16,11 @@ const working_directory = ""
 const timer_file = working_directory + "timer_file.json"
 const start_timer_file = working_directory + "start_timer"
 const stop_timer_file = working_directory + "stop_timer"
+
 const start_stopwatch_file = working_directory + "start_stopwatch"
-const stop_stopwatch_file = working_directory + "stop_stopwatch"
+const clear_stopwatch_file = working_directory + "clear_stopwatch"
+const pause_stopwatch_file = working_directory + "pause_stopwatch"
+const stopwatch_file = working_directory + "stopwatch_file.json"
 
 let lastSuccessTime = 0;
 let attemptedTime;
@@ -97,9 +100,86 @@ wsTimer.on('connection', function connection(ws) {
   })
 });
 
-//For connections to /not_timer
-wsNotTimer.on('connection', function connection(ws) {
-  ws.send("NOT A TEST")
+//For connections to /stopwatch
+wsStopWatch.on('connection', function connection(ws) {
+  //when a message is received:
+  ws.on('message', function incoming(message) {
+
+    //On any recieved message, send client the current state
+    readFile(stopwatch_file, 'utf8', (err, data) => {
+      if (err) {
+        console.error(err);
+        return;
+      }
+      console.log(data);
+      ws.send(data);
+    })
+
+    let rec_msg_json = JSON.parse(message)
+
+    //Check if the message is for starting the stopwatch
+    //If client asks to start, make start_stopwatch file
+    if ("source" in rec_msg_json) {
+      writeFile(start_stopwatch_file, JSON.stringify({"source": rec_msg_json["source"]}), function (err) {
+        if (err) throw err;
+        console.log('start_stopwatch file created');
+      });
+    }
+
+    //Check if the message is for clearing the stopwatch
+    //If client asks to stop, make clear_stopwatch file
+    if ("clear" in rec_msg_json) {
+      writeFile(clear_stopwatch_file, "clear", function (err) {
+        if (err) throw err;
+        console.log('clear_stopwatch file created');
+      });
+    }
+
+    //Check if the message is for pausing the stopwatch
+    //If client asks to stop, make pause_stopwatch file
+    if ("pause" in rec_msg_json) {
+      writeFile(pause_stopwatch_file, "pause", function (err) {
+        if (err) throw err;
+        console.log('pause_stopwatch file created');
+      });
+    }
+
+    // When the timer file changes, do this:
+    watch(stopwatch_file, (currentStat, prevStat) => {
+      //Read the contents of the file and pass it on
+
+      //STUPID DEBOUNCING A FILE WATCHING THING.
+      //GET THE TIME OF THE LAST SUCCESSFUL READ
+      //DON'T DO ANYTHING IF JUST A SUPER QUICK REPEAT
+      attemptedTime = Math.floor(new Date().getTime())
+      if (attemptedTime - lastSuccessTime > 100) {
+        lastSuccessTime = attemptedTime
+
+        readFile(stopwatch_file, 'utf8', (err, data) => {
+          if (err) {
+            console.error(err);
+            return;
+          }
+          //Send data to all clients of the websocket
+          wsTimer.clients.forEach( client => {
+            client.send(data);    //Let the client know what's going on if they send a message
+            readFile(stopwatch_file, 'utf8', (err, data) => {
+              if (err) {
+                console.error(err);
+                return;
+              }
+              console.log(data);
+              ws.send(data);
+            })
+          });
+        });
+      }
+    });
+
+      //Log the recieved message
+      console.log(message.toString('utf-8'))
+
+  })
 });
 
 //Handle upgrading to the right websocket route based on path in URL
@@ -111,13 +191,15 @@ server.on('upgrade', function upgrade(request, socket, head) {
     wsTimer.handleUpgrade(request, socket, head, function done(ws) {
       wsTimer.emit('connection', ws, request);
     });
-  //If user goes to /not_timer, send them to wsNotTimer
-  } else if (pathname === '/not_timer') {
-    wsNotTimer.handleUpgrade(request, socket, head, function done(ws) {
-      wsNotTimer.emit('connection', ws, request);
+  }
+  else if (pathname === '/stopwatch') {
+    //If user goes to /not_timer, send them to wsStopWatch
+    wsStopWatch.handleUpgrade(request, socket, head, function done(ws) {
+      wsStopWatch.emit('connection', ws, request);
     });
+  }
   //If user goes nowhere, end connection.
-  } else {
+  else {
     socket.destroy();
   }
 });

@@ -77,10 +77,3 @@ while True:
 
     #Allow time before deleting the files
     time.sleep(0.5)
-    
-    if os.path.exists(stop_timer_path):
-        os.remove(stop_timer_path)
-    if os.path.exists(start_timer_path):
-        os.remove(start_timer_path)
-    if os.path.exists(timer_left_path):
-        os.remove(timer_left_path)

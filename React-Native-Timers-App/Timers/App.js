@@ -4,12 +4,14 @@ import { StyleSheet, Text, View, Button, TextInput, TouchableOpacity, Vibration,
 import ProgressBar from 'react-native-progress/Bar';
 import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
+import {NavigationContainer} from '@react-navigation/native';
+import {createNativeStackNavigator} from '@react-navigation/native-stack';
 //To ensure that, when switching between data and WIFI, the app doesn't need to be restarted
 import ReconnectingWebSocket from 'reconnecting-websocket';
 
 // Establish websocket connection
-const ip = "10.20.11.26"
-let socket = new ReconnectingWebSocket("ws://" + ip + ":4762/timer");
+const ip = "10.0.0.20"
+let TimerSocket = new ReconnectingWebSocket("ws://" + ip + ":4762/timer");
 let progress = 0;
 let received_source = "Unknown";
 let notified = false;
@@ -27,6 +29,7 @@ let lightTextColourHex;
 let progressBarColourHex;
 let sourceTextBGColourHex;
 
+// Set colours, choosing platform defaults where possible
 if (Platform.OS === 'android') {
   backgroundColourHex = PlatformColor('@android:color/system_neutral2_900');
   mainButtonBGColourHex = PlatformColor('@android:color/system_accent1_200')
@@ -44,8 +47,8 @@ if (Platform.OS === 'android') {
   sourceTextBGColourHex = "#E6E6E3";
 }
 
-
-if (Platform.OS === 'android') {
+// Set up notifications on mobile
+if (Platform.OS === 'android' || Platform.OS === 'ios') {
   //NOTIFICATION STUFF///
   //MAKE IT PLAY SOUND AND BUZZ THE PHONE//
   Notifications.setNotificationHandler({
@@ -75,9 +78,9 @@ export default function App() {
   const [mainButtonProperties, setMainButtonProperties] = useState({"funct" : "", "text" : "test"})
 
   // When the connection is opened:
-  socket.onopen = function(e) {
+  TimerSocket.onopen = function(e) {
     console.log("[open] Connection established");
-    socket.send(JSON.stringify({"hello" : "there"}))
+    TimerSocket.send(JSON.stringify({"hello" : "there"}))
   };
 
   //Takes the text from the input field and turns it into a number of seconds, outputs to 'inputtedTimerLength'
@@ -87,16 +90,16 @@ export default function App() {
 
   //Sends the JSON for stopping the timer
   function sendStopTimer() {
-    socket.send(JSON.stringify({"stop" : "please"}));
+    TimerSocket.send(JSON.stringify({"stop" : "please"}));
     console.log(recieved_json)
   }
 
   function sendStartTimer() {
-    socket.send(JSON.stringify({"length" : Number(timerInputString), "source" : source}))
+    TimerSocket.send(JSON.stringify({"length" : Number(timerInputString), "source" : source}))
   }
 
-    // When the connection recieves a message:
-  socket.onmessage = function(event) {
+  // When the connection recieves a message:
+  TimerSocket.onmessage = function(event) {
     let length;
     console.log(`[message] Data received from server: ${event.data}`);
     recieved_json = JSON.parse(event.data)
@@ -159,38 +162,81 @@ export default function App() {
 
   }
 
-  return (
-    <View style={styles.container}>
+  const Stack = createNativeStackNavigator();
 
-      <View style={{alignSelf: 'center'}}>
-      <TextInput style={styles.inputText} placeholderTextColor={'grey'} onChangeText={getInputLength} keyboardType='numeric'/>
-      </View>
-      
-      <View>
-        <Text style={styles.timeLeftText}>{timerDisplayString}</Text>
-      </View>
-
-      <View style={styles.sourceTextView}>
+  const TimerScreen = ({navigation}) => {
+    return (
+      <View style={TimerStyles.container}>
         <View style={{alignSelf: 'center'}}>
-          <Text style={styles.sourceText}>{received_source}</Text>
+          <TextInput style={TimerStyles.inputText} placeholderTextColor={'grey'} onChangeText={getInputLength} keyboardType='numeric'/>
         </View>
+        
+        <View>
+          <Text style={TimerStyles.timeLeftText}>{timerDisplayString}</Text>
+        </View>
+
+        <View style={TimerStyles.sourceTextView}>
+          <View style={{alignSelf: 'center'}}>
+            <Text style={TimerStyles.sourceText}>{received_source}</Text>
+          </View>
+        </View>
+
+        <TouchableOpacity onPress={mainButtonProperties["funct"]}>
+          <View style={TimerStyles.startButtonView}>
+            <Text style={{ color: darkTextColourHex, fontSize:80, fontWeight: '700' }}>{mainButtonProperties["text"]}</Text>
+            <ProgressBar progress={Number(progress)} size={500} color={progressBarColourHex}  width={260} height={40} borderRadius={20} borderWidth={7}/>
+          </View>
+        </TouchableOpacity>
+
+        <StatusBar style="auto" />
+
+        <Button title="Stopwatch" onPress={() => navigation.navigate('Stopwatch') }/>
+
       </View>
+    );
+  };
 
-      <TouchableOpacity onPress={mainButtonProperties["funct"]}>
-        <View style={styles.startButtonView}>
-          <Text style={{ color: darkTextColourHex, fontSize:80, fontWeight: '700' }}>{mainButtonProperties["text"]}</Text>
-          <ProgressBar progress={Number(progress)} size={500} color={progressBarColourHex}  width={260} height={40} borderRadius={20} borderWidth={7}/>
-         </View>
-      </TouchableOpacity>
+  const StopwatchScreen = ({navigation}) => {
+    return (
+      <View style={StopwatchStyles.container}>
+        
+        <View>
+          <Text style={StopwatchStyles.timeLeftText}>{timerDisplayString}</Text>
+        </View>
 
-      <StatusBar style="auto" />
+        <View style={StopwatchStyles.sourceTextView}>
+          <View style={{alignSelf: 'center'}}>
+            <Text style={StopwatchStyles.sourceText}>{received_source}</Text>
+          </View>
+        </View>
 
-    </View>
+        <TouchableOpacity onPress={mainButtonProperties["funct"]}>
+          <View style={StopwatchStyles.startButtonView}>
+            <Text style={{ color: darkTextColourHex, fontSize:80, fontWeight: '700' }}>{mainButtonProperties["text"]}</Text>
+          </View>
+        </TouchableOpacity>
+
+        <StatusBar style="auto" />
+
+        <Button title="Timers" onPress={() => navigation.navigate('Timers') }/>
+
+      </View>
+    );
+  };
+
+  return (
+    <NavigationContainer>
+      <Stack.Navigator>
+        <Stack.Screen name="Timers" component={TimerScreen} options={{headerShown: false}}/>
+        <Stack.Screen name="Stopwatch" component={StopwatchScreen} options={{headerShown: false}}/>
+       
+      </Stack.Navigator>
+    </NavigationContainer>
   );
 
 }
 
-const styles = StyleSheet.create({
+const TimerStyles = StyleSheet.create({
   
   container: {
     flex: 1,
@@ -217,6 +263,50 @@ const styles = StyleSheet.create({
     fontSize: 40,
     minWidth: 20,
     alignItems: 'center'
+  },
+  sourceText: {
+    color: darkTextColourHex,
+    fontSize: 20,
+    minWidth: 20,
+    fontWeight: '700',
+    alignItems: 'center',
+  },
+  startButtonView: {
+    backgroundColor: mainButtonBGColourHex,
+    alignItems: 'center', 
+    justifyContent: 'center',
+    borderRadius: 100,
+    margin: 15,
+    height: 300,
+  },
+  sourceTextView: {
+    backgroundColor: sourceTextBGColourHex,
+    alignSelf: 'center',
+    justifyContent: 'center',
+    borderRadius: 100,
+    margin: 15,
+    height: 30,
+    width: 100
+  }
+});
+
+const StopwatchStyles = StyleSheet.create({
+  
+  container: {
+    flex: 1,
+    padding: 60,
+    backgroundColor: backgroundColourHex,
+    alignContent: 'center'
+  },
+  titleText: {
+    color: 'white',
+    padding: 16
+  },
+  timeLeftText: {
+    color: lightTextColourHex,
+    padding: 16,
+    fontSize: 80,
+    textAlign: 'center'
   },
   sourceText: {
     color: darkTextColourHex,
