@@ -11,7 +11,8 @@ import ReconnectingWebSocket from 'reconnecting-websocket';
 
 // Establish websocket connection
 const ip = "10.0.0.20"
-let TimerSocket = new ReconnectingWebSocket("ws://" + ip + ":4762/timer");
+let TimerSocket = new ReconnectingWebSocket("ws://" + ip + ":4761/timer");
+let StopSocket = new ReconnectingWebSocket("ws://" + ip + ":4762/stopwatch");
 let TimerProgress = 0;
 let TimerReceivedSource = "Unknown";
 let StopReceivedSource = "Unknown";
@@ -30,11 +31,13 @@ let darkTextColourHex;
 let lightTextColourHex;
 let progressBarColourHex;
 let sourceTextBGColourHex;
+let clearButtonBGColourHex;
 
 // Set colours, choosing platform defaults where possible
 if (Platform.OS === 'android') {
   backgroundColourHex = PlatformColor('@android:color/system_neutral2_900');
   mainButtonBGColourHex = PlatformColor('@android:color/system_accent1_200')
+  clearButtonBGColourHex = PlatformColor('@android:color/system_accent1_800')
   darkTextColourHex = PlatformColor('@android:color/system_accent1_900');
   lightTextColourHex = PlatformColor('@android:color/system_accent1_200');
   sourceTextBGColourHex = PlatformColor('@android:color/system_accent2_100');
@@ -43,6 +46,7 @@ if (Platform.OS === 'android') {
 } else {
   backgroundColourHex = "#1c1b1f"
   mainButtonBGColourHex = "#c6bffa"
+  clearButtonBGColourHex = "#2e295c"
   darkTextColourHex = "#2e295c";
   lightTextColourHex = "#c6bffa"
   progressBarColourHex = "#2e295c";
@@ -76,16 +80,24 @@ export default function App() {
   // Don't quite know why, since I had the opposite issue with timerInputString. S
   const [timerDisplayString, setTimerDisplayString] = useState('no_c')
 
+  const [stopwatchDisplayString, setStopwatchDisplayString] = useState('no_c')
+
   // Set state for whether button is to start or stop timer
   const [mainTimerButtonProperties, setMainTimerButtonProperties] = useState({"funct" : "", "text" : "test"})
 
-  // Set state for whether button is to start or stop timer
+  // Set state for whether button is to start or clear stopwatch
   const [mainStopwatchButtonProperties, setMainStopwatchButtonProperties] = useState({"funct" : "", "text" : "test"})
 
   // When the timer connection is opened:
   TimerSocket.onopen = function(e) {
     console.log("Timer Connection established");
     TimerSocket.send(JSON.stringify({"hello" : "timer"}))
+  };
+
+  // When the timer connection is opened:
+  StopSocket.onopen = function(e) {
+    console.log("Stopwatch Connection established");
+    StopSocket.send(JSON.stringify({"hello" : "stopwatch"}))
   };
 
   //Takes the text from the input field and turns it into a number of seconds, outputs to 'inputtedTimerLength'
@@ -113,6 +125,11 @@ export default function App() {
   function sendClearStopwatch() {
     StopSocket.send(JSON.stringify({"clear" : "please"}))
   }
+
+  function sendPauseStopwatch() {
+    StopSocket.send(JSON.stringify({"pause" : "please"}))
+  }
+
 
   // When the stopwatch connection recieves a message:
   TimerSocket.onmessage = function(event) {
@@ -178,6 +195,39 @@ export default function App() {
 
   }
 
+  // When the stopwatch connection recieves a message:
+  StopSocket.onmessage = function(event) {
+    let length;
+    console.log(`Stopwatch Data received from server: ${event.data}`);
+    StopReceivedJson = JSON.parse(event.data)
+
+    //If stopwatch-related
+    if ("seconds" in StopReceivedJson) {
+
+      // If stopwatch running, button stops timer, and vice versa
+      if (StopReceivedJson["seconds"]) {
+        setMainStopwatchButtonProperties({"text" : "PAUSE", "funct" : sendPauseStopwatch})
+        StopReceivedSource = StopReceivedJson["source"]
+      } else {
+        setMainStopwatchButtonProperties({"text" : "START", "funct" : sendStartStopwatch})
+        StopReceivedSource = ""
+      }
+
+        // Convert seconds into hours:minutes:seconds
+        let date = new Date(null);
+        date.setSeconds(StopReceivedJson["seconds"]);
+        length = date.toISOString().substr(11, 8);
+        // Checks if hours are empty, shorten if so.
+        if (length.slice(0,3) == "00:") {
+            length = length.slice(3)
+        }
+
+        //Set the div to the time remaining
+        setStopwatchDisplayString(length);
+
+        }
+  }
+
 
   const Stack = createNativeStackNavigator();
 
@@ -218,7 +268,7 @@ export default function App() {
       <View style={StopwatchStyles.container}>
         
         <View>
-          <Text style={StopwatchStyles.timeLeftText}>{timerDisplayString}</Text>
+          <Text style={StopwatchStyles.timeLeftText}>{stopwatchDisplayString}</Text>
         </View>
 
         <View style={StopwatchStyles.sourceTextView}>
@@ -230,6 +280,12 @@ export default function App() {
         <TouchableOpacity onPress={mainStopwatchButtonProperties["funct"]}>
           <View style={StopwatchStyles.startButtonView}>
             <Text style={{ color: darkTextColourHex, fontSize:80, fontWeight: '700' }}>{mainStopwatchButtonProperties["text"]}</Text>
+          </View>
+        </TouchableOpacity>
+
+        <TouchableOpacity onPress={sendClearStopwatch}>
+          <View style={StopwatchStyles.clearButtonView}>
+            <Text style={{ color: lightTextColourHex, fontSize:40, fontWeight: '700' }}>{"CLEAR"}</Text>
           </View>
         </TouchableOpacity>
 
@@ -339,6 +395,16 @@ const StopwatchStyles = StyleSheet.create({
     borderRadius: 100,
     margin: 15,
     height: 300,
+  },
+  clearButtonView: {
+    backgroundColor: clearButtonBGColourHex,
+    alignItems: 'center', 
+    justifyContent: 'center',
+    borderRadius: 100,
+    margin: 15,
+    height: 60,
+    alignSelf: 'center',
+    width: 200
   },
   sourceTextView: {
     backgroundColor: sourceTextBGColourHex,

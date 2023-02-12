@@ -72,7 +72,7 @@ while True:
                 if os.path.exists(clear_stopwatch_path):
                     stopstats["paused"] = False
                     break
-                sleep(0.1)
+                time.sleep(0.1)
     
         #Check if timer should be cancelled
         if os.path.exists(clear_stopwatch_path):
