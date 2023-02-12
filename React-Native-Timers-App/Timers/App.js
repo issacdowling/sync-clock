@@ -12,7 +12,6 @@ import ReconnectingWebSocket from 'reconnecting-websocket';
 // Establish websocket connection
 const ip = "10.0.0.20"
 let TimerSocket = new ReconnectingWebSocket("ws://" + ip + ":4762/timer");
-let StopSocket = new ReconnectingWebSocket("ws://" + ip + ":4762/stopwatch");
 let TimerProgress = 0;
 let TimerReceivedSource = "Unknown";
 let StopReceivedSource = "Unknown";
@@ -87,12 +86,6 @@ export default function App() {
   TimerSocket.onopen = function(e) {
     console.log("Timer Connection established");
     TimerSocket.send(JSON.stringify({"hello" : "timer"}))
-  };
-
-  // When the connection is opened:
-  StopSocket.onopen = function(e) {
-    console.log("Stopwatch Connection established");
-    TimerSocket.send(JSON.stringify({"hello" : "stopwatch"}))
   };
 
   //Takes the text from the input field and turns it into a number of seconds, outputs to 'inputtedTimerLength'
@@ -185,36 +178,6 @@ export default function App() {
 
   }
 
-  // When the connection recieves a message:
-  StopSocket.onmessage = function(sevent) {
-    let length;
-    console.log(`Stopwatch Data received from server: ${sevent.data}`);
-    StopReceivedJson = JSON.parse(sevent.data)
-
-    StopReceivedSource = StopReceivedJson["source"];
-
-    //If stopwatch-related
-    if ("source" in StopReceivedJson) {
-
-      // If timer running, button stops timer, and vice versa
-      if (StopReceivedJson["dismissed"]) {
-        setMainStopwatchButtonProperties({"text" : "START", "funct" : sendStartStopwatch})
-        StopReceivedSource = ""
-      } else {
-        setMainStopwatchButtonProperties({"text" : "PAUSE", "funct" : sendStopStopwatch})
-      }
-
-        // Convert seconds into hours:minutes:seconds
-        let date = new Date(null);
-        date.setSeconds(StopReceivedJson["seconds"]);
-        length = date.toISOString().substr(11, 8);
-        // Checks if hours are empty, shorten if so.
-        if (length.slice(0,3) == "00:") {
-            length = length.slice(3)
-        }
-
-    }
-  }
 
   const Stack = createNativeStackNavigator();
 
