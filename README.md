@@ -6,11 +6,11 @@ This will be used for any little convenience features that I want to sync betwee
 # Usage
 
 ## Timers
-There are two ways to interact with the timers: websockets, and the REST API.
+Time things.
 
 ### Websockets
 
-The address is `ws://your-ip:4762/timer`.
+The address is `ws://your-ip:4761/timer`.
 
 #### If you want to start a timer:
 Send a JSON string to the websocket with the following format:
@@ -21,7 +21,7 @@ Send a JSON string to the websocket with the following format:
 #### If you want to get the status of the timer:
 Just stay connected to the websocket. You'll receive some JSON immediately on connection, and recieve more every time the status updates in any way:
 ```
-{"length" : remaining_time_in_seconds, "starting_length" : original_timer_length_in_seconds, "running" : is_running_bool, "dismissed" : user_has_dismissed_timer_bool, "source" : name_of_device_set_from}
+{"remaining_length" : remaining_time_in_seconds, "starting_length" : original_timer_length_in_seconds, "dismissed" : user_has_dismissed_timer_bool, "source" : name_of_device_set_from}
 ```
 
 #### If you want to stop the timer:
