@@ -6,13 +6,11 @@ import {watch, watchFile, readFile, writeFile} from 'fs';
 
 
 //Create server to listen for connections, and the "sub-servers" (?) to handle requests based on path.
-const TimerServer = createServer();
-const StopwatchServer = createServer();
-const wsTimer = new WebSocketServer({server : TimerServer});
-const wsStopWatch = new WebSocketServer({server : StopwatchServer});
+const server = createServer();
+const wsTimer = new WebSocketServer({ noServer: true });
+const wsStopWatch = new WebSocketServer({ noServer: true });
 
-const TIMERPORT = 4761
-const STOPWATCHPORT = 4762
+const PORT = 4761
 //When testing, make it somewhere other than the repo, or five server will auto refresh, breaking things
 const working_directory = ""
 const timer_file = working_directory + "timer_file.json"
@@ -190,7 +188,26 @@ wsStopWatch.on('connection', function connection(ws) {
   })
 });
 
+//Handle upgrading to the right websocket route based on path in URL
+server.on('upgrade', function upgrade(request, socket, head) {
+  const { pathname } = parse(request.url);
+
+  //If user goes to /timer, send them to wsTimer
+  if (pathname === '/timer') {
+    wsTimer.handleUpgrade(request, socket, head, function done(ws) {
+      wsTimer.emit('connection', ws, request);
+    });
+  //If user goes to /stopwatch, send them to wsStopwatch
+  } else if (pathname === '/stopwatch') {
+    wsStopWatch.handleUpgrade(request, socket, head, function done(ws) {
+      wsStopWatch.emit('connection', ws, request);
+    });
+  //If user goes nowhere, end connection.
+  } else {
+    socket.destroy();
+  }
+});
+
 
 //Start server on port 3000
-TimerServer.listen(TIMERPORT);
-StopwatchServer.listen(STOPWATCHPORT);
+server.listen(PORT);

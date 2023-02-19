@@ -12,7 +12,7 @@ import ReconnectingWebSocket from 'reconnecting-websocket';
 // Establish websocket connection
 const ip = "10.0.0.20"
 let TimerSocket = new ReconnectingWebSocket("ws://" + ip + ":4761/timer");
-let StopSocket = new ReconnectingWebSocket("ws://" + ip + ":4762/stopwatch");
+let StopSocket = new ReconnectingWebSocket("ws://" + ip + ":4761/stopwatch");
 let TimerProgress = 0;
 let TimerReceivedSource = "Unknown";
 let StopReceivedSource = "Unknown";
