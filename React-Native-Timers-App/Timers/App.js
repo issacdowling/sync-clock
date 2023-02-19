@@ -118,10 +118,6 @@ export default function App() {
     StopSocket.send(JSON.stringify({"source" : source}))
   }
 
-  function sendStopStopwatch() {
-    StopSocket.send(JSON.stringify({"stop" : "please"}))
-  }
-
   function sendClearStopwatch() {
     StopSocket.send(JSON.stringify({"clear" : "please"}))
   }

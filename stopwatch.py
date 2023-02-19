@@ -51,13 +51,18 @@ while True:
         time.sleep(1)
         stopstats["seconds"] += 1
     
-        #Write to file with timer stats
+        #Write to file with stopwatch stats
         with open(stopwatch_progress_path, "w") as stopwatch_progress:
             stopwatch_progress.write(json.dumps(stopstats))
 
         #Check if stopwatch should be paused
         if os.path.exists(pause_stopwatch_path):
             stopstats["paused"] = True
+
+            #Write to file with stopwatch stats
+            with open(stopwatch_progress_path, "w") as stopwatch_progress:
+                stopwatch_progress.write(json.dumps(stopstats))
+
             print("stopwatch paused")
             #If so, just delete the file, and unpause once the file comes back, or the clear file comes
             os.remove(pause_stopwatch_path)
