@@ -4,7 +4,6 @@ import { WebSocketServer } from 'ws';
 import { parse } from 'url';
 import {watch, watchFile, readFile, writeFile} from 'fs';
 
-
 //Create server to listen for connections, and the "sub-servers" (?) to handle requests based on path.
 const server = createServer();
 const wsTimer = new WebSocketServer({ noServer: true });
@@ -21,7 +20,6 @@ const stopwatch_file = working_directory + "stopwatch_file.json"
 const start_stopwatch_file = working_directory + "start_stopwatch"
 const clear_stopwatch_file = working_directory + "clear_stopwatch"
 const pause_stopwatch_file = working_directory + "pause_stopwatch"
-
 
 let timerLastSuccessTime = 0;
 let timerAttemptedTime;
