@@ -42,16 +42,22 @@ async def listen(messagehandler, client):
             logger.critical("Error handling message.")
 
 async def timer(timers, client):
+
+
     sounding = []
     logger.debug("Running timer loop")
+    previous_timers = None
+    await client.publish("bloob/timers/status", payload="[]", retain=True)
     while True:
         # subtract 1 from all timer lengths
         i = 0
+        updated = False
         for timer in timers:
             updated_timer = timer
             if(timer["length"] > 0):
                 updated_timer["length"] = timer["length"] - 1
                 timers[i] = updated_timer
+                updated = True
             else:
                 # publish message on timer finish
                 updated_timer["running"] = False
@@ -59,12 +65,15 @@ async def timer(timers, client):
                 if(timer["id"] not in sounding):
                     sounding.append(timer["id"])
                     await client.publish("bloob/timers/finish", payload=json.dumps({"id": timer["id"]}))
+                updated = True
+        if updated:
+            await client.publish("bloob/timers/status",payload=json.dumps(timers), retain=True)
         # clear list of published timer finish messages if the timer is removed
         # FIXME: This is a bad way to do this, and may cause issues at some point.
         if len(timers) == 0:
             sounding.clear()
 #        logger.debug("Send")
-        await client.publish("bloob/timers/status",payload=json.dumps(timers))
+        
         await asyncio.sleep(1)
 
 async def main():

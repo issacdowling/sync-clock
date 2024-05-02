@@ -103,7 +103,6 @@ timer_status = []
 async def handle_message(message, client):
     global sounding, timer_status
     message_decoded = json.loads(message.payload.decode())
-
     if(message.topic.matches(f"bloob/{arguments.device_id}/cores/{core_id}/run")):
         match message_decoded["intent"]:
             case "setTimer":
@@ -135,6 +134,8 @@ async def handle_message(message, client):
                 # respond to the intent
                 spoken = "Sure thing"
                 explanation = f"The timer core started a timer with length {seconds} seconds."
+                # avoid race condition in the bloob orchestrator, wait slightly
+                await asyncio.sleep(0.01)
                 await client.publish(f"bloob/{arguments.device_id}/cores/{core_id}/finished", payload=json.dumps({
                     "id": message_decoded["id"],
                     "text": spoken,
@@ -145,6 +146,8 @@ async def handle_message(message, client):
                 await client.publish(f"bloob/timers/stop", payload=json.dumps({}))
                 spoken = "Alright"
                 explanation = f"The timer core stopped the timer that was going off."
+                # avoid race condition in the bloob orchestrator, wait slightly
+                await asyncio.sleep(0.01)
                 await client.publish(f"bloob/{arguments.device_id}/cores/{core_id}/finished", payload=json.dumps({
                     "id": message_decoded["id"],
                     "text": spoken,
@@ -152,7 +155,6 @@ async def handle_message(message, client):
                     "end_type": "finish"
                 }))
             case "getTimer":
-
                 if(len(timer_status) > 0):
                     # there is an active timer
                     # convert to nice human readable numbers
@@ -182,6 +184,8 @@ async def handle_message(message, client):
                     # no active timer
                     spoken = "You don't have any running timers right now."
                     explanation = "The timer core checked for running timers and there were no active timers."
+                # avoid race condition in the bloob orchestrator, wait slightly
+                await asyncio.sleep(0.01)
                 await client.publish(f"bloob/{arguments.device_id}/cores/{core_id}/finished", payload=json.dumps({
                         "id": message_decoded["id"],
                         "text": spoken,
