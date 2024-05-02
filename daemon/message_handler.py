@@ -25,6 +25,7 @@ class MessageHandler:
                 for timer in self.timers:
                     self.timers.remove(timer)
                     await self.client.publish("bloob/timers/dismissed", payload=json.dumps({"id":timer["id"]}))
+                    await self.client.publish("bloob/timers/status", payload=json.dumps(self.timers), retain = True)
 
         except:
             self.logger.warning("Unable to decode message.")
