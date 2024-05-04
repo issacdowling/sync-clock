@@ -124,8 +124,13 @@ async def handle_message(message, client):
                 minutes = ["minute", "minutes"]
                 if(getTextMatches(match_item=hours, check_string=message_decoded["text"])):
                     seconds = seconds * 600
-                if(getTextMatches(match_item=minutes, check_string=message_decoded["text"])):
+                    time_unit = "hour"
+                elif(getTextMatches(match_item=minutes, check_string=message_decoded["text"])):
                     seconds = seconds * 60
+                    time_unit = "minute"
+                else:
+                    time_unit = "minute"
+
                 log(f"Found time as {seconds} seconds.", log_data)
 
                 # start the timer!
@@ -138,8 +143,8 @@ async def handle_message(message, client):
                                                                                }))
 
                 # respond to the intent
-                spoken = "Sure thing"
-                explanation = f"The timer core started a timer with length {seconds} seconds."
+                spoken = f"Sure thing, I'll start a {amount_of_time_number} {time_unit} timer"
+                explanation = f"The timer core started a timer with length {seconds} seconds ({amount_of_time_number} {time_unit})."
                 # avoid race condition in the bloob orchestrator, wait slightly
                 await asyncio.sleep(0.01)
                 await client.publish(f"bloob/{arguments.device_id}/cores/{core_id}/finished", payload=json.dumps({
@@ -150,7 +155,7 @@ async def handle_message(message, client):
                 }))
             case "stopTimer":
                 await client.publish(f"bloob/timers/stop", payload=json.dumps({}))
-                spoken = "Alright"
+                spoken = "Alright, I'll stop the timer"
                 explanation = f"The timer core stopped the timer that was going off."
                 # avoid race condition in the bloob orchestrator, wait slightly
                 await asyncio.sleep(0.01)
