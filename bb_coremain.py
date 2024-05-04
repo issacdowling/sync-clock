@@ -129,7 +129,7 @@ async def handle_message(message, client):
                     seconds = seconds * 60
                     time_unit = "minute"
                 else:
-                    time_unit = "minute"
+                    time_unit = "second"
 
                 log(f"Found time as {seconds} seconds.", log_data)
 
