@@ -34,7 +34,7 @@ arg_parser.add_argument("--device-id")
 arg_parser.add_argument("--identify", default="")
 
 arguments = arg_parser.parse_args()
-core_id = "timersync"
+core_id = "sync_clock"
 # identify handling
 if arguments.identify:
     print(json.dumps({"id": core_id, "roles": ["intent_handler"]}))
