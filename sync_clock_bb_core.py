@@ -51,27 +51,27 @@ core_config = {
         "description": "Allows communication with the Timer-Sync daemon, providing networked timers for Blueberry",
         "version": "0.1",
         "license": "AGPLv3"
-    },
-    "intents": [
+    }
+}
+
+intents = [
         {
             "intent_id": "setTimer",
             "core_id": core_id,
             "keywords": [ ["set", "make", "create"], ["timer", "time", "counter"], ["minutes", "minute", "seconds", "second", "hour", "hours"] ],
-            "collections": [["any_number"]]
+            "numbers": {"any": "any"}
         },
         {
             "intent_id": "stopTimer",
             "core_id": core_id,
-            "keywords": [ ["stop", "cancel", "dismiss"], ["timer"] ]
+            "keyphrases": [ ["stop", "cancel", "dismiss"], ["timer"] ]
         },
         {
             "intent_id": "getTimer",
             "core_id": core_id,
-            "keywords": [ ["timer", "time", "counter"], ["remaining", "left"] ],
-            "collections": [["get"]]
+            "keyphrases": [["$get"], ["timer", "time", "counter"], ["remaining", "left"] ],
         }
     ]
-}
 
 async def main():
     global daemon_proc, log_data, mpv_player
@@ -96,8 +96,12 @@ async def main():
         await client.subscribe("bloob/timers/status")
 
         # publish core config
-        await client.publish(f"bloob/{arguments.device_id}/cores/{core_id}/config", payload=json.dumps(core_config), retain=True, qos=2)
+        await client.publish(f"bloob/{arguments.device_id}/cores/{core_id}/config", payload=json.dumps(core_config), retain=True, qos=1)
         log("Core config published", log_data)
+
+        for intent in intents:
+            await client.publish(f"bloob/{arguments.device_id}/cores/{core_id}/intents/{intent["id"]}", payload=json.dumps(intent), retain=True, qos=1)
+
         # enter message handle loop
         async for message in client.messages:
             try:
