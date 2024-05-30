@@ -58,7 +58,7 @@ intents = [
         {
             "id": "setTimer",
             "core_id": core_id,
-            "keyphrases": [ ["set", "make", "create"], ["timer", "time", "counter"], ["minutes", "minute", "seconds", "second", "hour", "hours"] ],
+            "keyphrases": [ ["set", "make", "create"], ["timer", "counter"], ["minutes", "minute", "seconds", "second", "hour", "hours"] ],
             "numbers": {"any": "any"}
         },
         {
@@ -69,7 +69,7 @@ intents = [
         {
             "id": "getTimer",
             "core_id": core_id,
-            "keyphrases": [["$get"], ["timer", "time", "counter"], ["remaining", "left"] ],
+            "keyphrases": [["$get"], ["timer", "counter"], ["remaining", "left"] ],
         }
     ]
 
