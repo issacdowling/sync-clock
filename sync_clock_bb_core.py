@@ -56,18 +56,18 @@ core_config = {
 
 intents = [
         {
-            "intent_id": "setTimer",
+            "id": "setTimer",
             "core_id": core_id,
             "keywords": [ ["set", "make", "create"], ["timer", "time", "counter"], ["minutes", "minute", "seconds", "second", "hour", "hours"] ],
             "numbers": {"any": "any"}
         },
         {
-            "intent_id": "stopTimer",
+            "id": "stopTimer",
             "core_id": core_id,
             "keyphrases": [ ["stop", "cancel", "dismiss"], ["timer"] ]
         },
         {
-            "intent_id": "getTimer",
+            "id": "getTimer",
             "core_id": core_id,
             "keyphrases": [["$get"], ["timer", "time", "counter"], ["remaining", "left"] ],
         }
@@ -100,7 +100,7 @@ async def main():
         log("Core config published", log_data)
 
         for intent in intents:
-            await client.publish(f"bloob/{arguments.device_id}/cores/{core_id}/intents/{intent["id"]}", payload=json.dumps(intent), retain=True, qos=1)
+            await client.publish(f"bloob/{arguments.device_id}/cores/{core_id}/intents/{intent['id']}", payload=json.dumps(intent), retain=True, qos=1)
 
         # enter message handle loop
         async for message in client.messages:
