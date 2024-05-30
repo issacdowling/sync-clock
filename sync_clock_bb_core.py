@@ -58,7 +58,7 @@ intents = [
         {
             "id": "setTimer",
             "core_id": core_id,
-            "keywords": [ ["set", "make", "create"], ["timer", "time", "counter"], ["minutes", "minute", "seconds", "second", "hour", "hours"] ],
+            "keyphrases": [ ["set", "make", "create"], ["timer", "time", "counter"], ["minutes", "minute", "seconds", "second", "hour", "hours"] ],
             "numbers": {"any": "any"}
         },
         {
