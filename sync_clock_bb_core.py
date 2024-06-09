@@ -66,7 +66,7 @@ async def main():
     mpv_player = mpv.MPV()
     # create sounding loop
     asyncio.create_task(sounder())
-    async with aiomqtt.Client(hostname=arguments.host, port=int(arguments.port), username=arguments.user, password=arguments.password) as client:
+    async with aiomqtt.Client(hostname=arguments.host, port=int(arguments.port), username=arguments.user, password=arguments.__dict__.get("pass")) as client:
         # sub to intent topic
         await client.subscribe(f"bloob/{arguments.device_id}/cores/{core_id}/run")
         # sub to timer topcis
