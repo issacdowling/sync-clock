@@ -14,21 +14,10 @@ import mpv
 
 import pybloob
 
-# setup the argparser
-arg_parser = argparse.ArgumentParser()
-arg_parser.add_argument("--host", default="localhost")
-arg_parser.add_argument("--port", default=1883)
-arg_parser.add_argument("--user")
-arg_parser.add_argument("--pass", dest="password")
-arg_parser.add_argument("--device-id")
-arg_parser.add_argument("--identify", default="")
+core_id = "sync_clock"
 
 arguments = arg_parser.parse_args()
-core_id = "sync_clock"
-# identify handling
-if arguments.identify:
-    print(json.dumps({"id": core_id, "roles": ["intent_handler"]}))
-    exit(0)
+c = pybloob.Core(device_id=arguments.device_id, core_id=core_id, mqtt_host=arguments.host, mqtt_port=arguments.port, mqtt_user=arguments.user, mqtt_pass=arguments.__dict__.get("pass"))
 
 # define the core config
 core_config = {
@@ -67,12 +56,12 @@ async def main():
     global daemon_proc, log_data, mpv_player
     # get logging working
     log_data = arguments.host, int(arguments.port), arguments.device_id, core_id
-    pybloob.log("Starting daemon", log_data)
+    c.log("Starting daemon")
     # start the daemon
     daemon_dir = pathlib.Path(sys.argv[0]).parent.joinpath("daemon")
     daemon = daemon_dir.joinpath("main.py")
     daemon_proc = subprocess.Popen([sys.executable, daemon], stdin=None, stdout=None, stderr=None)
-    pybloob.log("Daemon running", log_data)
+    c.log("Daemon running")
     # get mpv ready
     mpv_player = mpv.MPV()
     # create sounding loop
@@ -87,7 +76,7 @@ async def main():
 
         # publish core config
         await client.publish(f"bloob/{arguments.device_id}/cores/{core_id}/config", payload=json.dumps(core_config), retain=True, qos=1)
-        pybloob.log("Core config published", log_data)
+        c.log("Core config published")
 
         for intent in intents:
             await client.publish(f"bloob/{arguments.device_id}/cores/{core_id}/intents/{intent['id']}", payload=json.dumps(intent), retain=True, qos=1)
@@ -97,7 +86,7 @@ async def main():
             try:
                 await handle_message(message, client)
             except Exception as e:
-                pybloob.log(f"Unable to parse message. ({e})", log_data)
+                c.log(f"Unable to parse message. ({e})")
 sounding = False
 timer_status = []
 async def handle_message(message, client):
@@ -125,7 +114,7 @@ async def handle_message(message, client):
                 else:
                     time_unit = "second"
 
-                pybloob.log(f"Found time as {seconds} seconds.", log_data)
+                c.log(f"Found time as {seconds} seconds.")
 
                 # start the timer!
                 await client.publish("bloob/timers/start", payload=json.dumps({
@@ -210,7 +199,7 @@ async def sounder():
     global mpv_player, sounding
     while True:
         if(sounding):
-            pybloob.log("Sounding", log_data)
+            c.log("Sounding")
             timer_sound = str(pathlib.Path(sys.argv[0]).parent.joinpath("timer.wav"))
             mpv_player.play(timer_sound)
         await asyncio.sleep(2)
