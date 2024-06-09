@@ -16,7 +16,7 @@ import pybloob
 
 core_id = "sync_clock"
 
-arguments = arg_parser.parse_args()
+arguments = pybloob.coreArgParse()
 c = pybloob.Core(device_id=arguments.device_id, core_id=core_id, mqtt_host=arguments.host, mqtt_port=arguments.port, mqtt_user=arguments.user, mqtt_pass=arguments.__dict__.get("pass"))
 
 # define the core config
